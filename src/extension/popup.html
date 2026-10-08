@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Discord RPC for YouTube Music</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="head">
+      <div class="brand">
+        <span class="mark" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 14 14">
+            <path d="M3 1.8v10.4a.6.6 0 0 0 .9.5l8.2-5.2a.6.6 0 0 0 0-1L3.9 1.3a.6.6 0 0 0-.9.5Z" fill="currentColor" />
+          </svg>
+        </span>
+        <div>
+          <h1>Discord RPC</h1>
+          <p>for YouTube Music</p>
+        </div>
+      </div>
+      <div class="switch-row">
+        <span id="masterText">On</span>
+        <button class="switch" id="master" role="switch" aria-checked="true" aria-label="Show on Discord"></button>
+      </div>
+    </header>
+
+    <div class="health" id="health"></div>
+    <div id="banner"></div>
+    <div class="now" id="now"></div>
+
+    <div class="settings">
+      <div class="group-title">Display</div>
+      <div class="setting">
+        <div class="what"><b>Status text</b><span>Shown next to your name</span></div>
+        <div class="seg" role="radiogroup" aria-label="Status text" id="statusSeg">
+          <button role="radio" data-value="app" aria-checked="true">App</button>
+          <button role="radio" data-value="title" aria-checked="false">Song</button>
+          <button role="radio" data-value="artist" aria-checked="false">Artist</button>
+        </div>
+      </div>
+      <div class="setting">
+        <div class="what"><b>Progress bar</b></div>
+        <button class="switch" id="progressSwitch" role="switch" aria-checked="true" aria-label="Progress bar"></button>
+      </div>
+      <div class="setting">
+        <div class="what"><b>Play button</b><span>Others can open the song</span></div>
+        <button class="switch" id="buttonSwitch" role="switch" aria-checked="true" aria-label="Play button"></button>
+      </div>
+      <div class="setting">
+        <div class="what"><b>Original title</b><span>Keeps ひとひら, moves feat. to the artist</span></div>
+        <button class="switch" id="originalTitleSwitch" role="switch" aria-checked="true" aria-label="Original title"></button>
+      </div>
+      <div class="setting" id="langRow">
+        <div class="what"><b>Button language</b><span id="langNote"></span></div>
+        <select id="lang" aria-label="Button language"></select>
+      </div>
+      <div class="setting">
+        <div class="what"><b>When paused</b></div>
+        <select id="paused" aria-label="When paused">
+          <option value="hide">Hide from Discord</option>
+          <option value="show">Keep, marked paused</option>
+        </select>
+      </div>
+    </div>
+
+    <details>
+      <summary>Troubleshooting</summary>
+      <div class="diag">
+        <div>Helper log: <span class="mono">%TEMP%\ytm-discord-rpc-host.log</span></div>
+        <div><button class="btn" id="copyDiag">Copy diagnostics</button></div>
+      </div>
+    </details>
+    <div class="foot">
+      <span id="version"></span>
+      <a href="https://music.youtube.com" target="_blank" rel="noopener noreferrer">Open YouTube Music</a>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

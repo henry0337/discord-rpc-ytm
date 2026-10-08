@@ -1,0 +1,23 @@
+{
+  "name": "discord-rpc-ytb",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Discord Rich Presence for YouTube Music (web) via a browser extension and a native messaging host",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test \"src/**/*.test.ts\"",
+    "install-host": "node dist/host/host.cjs --install",
+    "uninstall-host": "node dist/host/host.cjs --uninstall"
+  },
+  "dependencies": {
+    "@xhayper/discord-rpc": "^1.5.1"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.3.4",
+    "@types/node": "^26.6.4",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
+  }
+}

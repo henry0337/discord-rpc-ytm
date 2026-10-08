@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "Discord RPC for YouTube Music",
+  "version": "0.1.0",
+  "description": "Show what you are listening to on YouTube Music as your Discord Rich Presence.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAn09Hsb3Eczi5RHz01SvCkAZQ9qXiOb8+HBc5PZ4z1iAdfZEh0CUpGdc3lGLRiJO3ShvN3lZAuIFRaPktoGiuHPu28Y24W45Kui2JoieXSqeM45YgZ46oYEwUP0z8MSLRYG1LPoyMcOnoAWiOlVIMGHCVYx0rqm4rD4M+fj77tQN9fuMsTEe7hLZN0KBR2LI0VtYCkd3YdNE8NhEJg0oDZ0MzofJqT5hSoyRPhFKqYWcLww9QIp66JqHlMu/3fJk2gFVf2z6bKx/KJXxHXNmcv6lDD3BH1EK/HMRL4F3MpYZ3ixaMOgTwyI1so1/p54HZ6ZM5sNdO2c2JtBZnqc5wkwIDAQAB",
+  "permissions": [
+    "nativeMessaging",
+    "storage"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Discord RPC for YouTube Music"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://music.youtube.com/*"
+      ],
+      "js": [
+        "page.js"
+      ],
+      "world": "MAIN",
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "https://music.youtube.com/*"
+      ],
+      "js": [
+        "content.js"
+      ]
+    }
+  ],
+  "minimum_chrome_version": "111"
+}
