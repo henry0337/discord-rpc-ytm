@@ -37,23 +37,28 @@ Bấm icon extension để mở popup:
 
 - Công tắc **On/Off** ở góc trên: tắt thì không hiện gì lên Discord.
 - Hai viên thuốc trạng thái (**Helper**, **Discord**); khi lỗi có khung giải thích kèm lệnh để sửa.
-- Thẻ **On Discord** vẽ giống activity thật (ảnh bìa, tên bài, tác giả, thanh tiến trình, nút).
-- **Status text** (App / Song / Artist): phần hiện cạnh tên bạn trên Discord.
-- **Progress bar**, **Play button**: bật/tắt thanh tiến trình và nút.
-- **Original title**: với bài có tên ngoài chữ Latin, YouTube Music viết "tên gốc - bản Latin"
-  (vd. `ひとひら - Hitohira`); bật thì chỉ hiện tên gốc (`ひとひら`). Chỉ cắt khi phần sau dấu " - " toàn chữ
-  Latin và không phải nhãn phiên bản (Live, Instrumental, TV Size, Remix…); ghi chú trong ngoặc như
-  `(Remastered)` được giữ lại. Đây là quy tắc đoán nên có công tắc để tắt. Logic ở `src/extension/originalTitle.ts`.
-  Cùng công tắc này: với bài có tên ngoài chữ Latin, phần "(feat. …)" mà YouTube Music tự thêm vào tên bài (viết
-  theo ngôn ngữ giao diện nên không đọc được) được lấy từ bản tiếng Anh của cùng dữ liệu, bỏ khỏi tên bài và
-  nối tên collaborator vào dòng tác giả: `ピュア - Pure (cùng với Eriko Hashimoto)` thành tên bài `ピュア`, dòng 2
-  `PAS TASTA, Eriko Hashimoto` (bỏ qua tên đã có trong danh sách tác giả). Tốn thêm một request cho mỗi bài như vậy.
-  Logic ở `src/extension/credit.ts`.
+- Thẻ **On Discord (Preview)** vẽ giống activity thật (ảnh bìa, tên bài, tác giả, thanh tiến trình, nút).
+  Tên bài dài bị cắt bằng "…"; rê chuột vào để xem đầy đủ.
 - **Button language**: ngôn ngữ nhãn nút (mặc định theo trình duyệt).
 - **When paused**: ẩn khỏi Discord, hoặc giữ lại và ghi "Paused · tên tác giả" (không có thanh tiến trình
   vì Discord sẽ tiếp tục đếm).
 - **Troubleshooting → Copy diagnostics**: copy trạng thái (phiên bản, trình duyệt, cài đặt, kết nối, bài đang
   phát) để dán vào báo lỗi. Không chứa link.
+
+Một số hành vi được cố định, không có công tắc:
+
+- **Phần hiện cạnh tên bạn** trong danh sách thành viên luôn là tên tác giả. Dòng "Listening to …" trên thẻ profile
+  thì Discord luôn điền tên ứng dụng đặt trong Developer Portal ("Listening to YouTube Music").
+- **Thanh tiến trình** và **nút "Play on YouTube Music"** luôn bật (thanh tiến trình chỉ hiện khi đang phát).
+- **Tên gốc**: với bài có tên ngoài chữ Latin, YouTube Music viết "tên gốc - bản Latin"
+  (vd. `ひとひら - Hitohira`); extension chỉ hiện tên gốc (`ひとひら`). Chỉ cắt khi phần sau dấu " - " toàn chữ
+  Latin và không phải nhãn phiên bản (Live, Instrumental, TV Size, Remix…); ghi chú trong ngoặc như
+  `(Remastered)` được giữ lại. Đây là quy tắc đoán, logic ở `src/extension/originalTitle.ts`.
+  Cũng với bài có tên ngoài chữ Latin, phần "(feat. …)" mà YouTube Music tự thêm vào tên bài (viết
+  theo ngôn ngữ giao diện nên không đọc được) được lấy từ bản tiếng Anh của cùng dữ liệu, bỏ khỏi tên bài và
+  nối tên collaborator vào dòng tác giả: `ピュア - Pure (cùng với Eriko Hashimoto)` thành tên bài `ピュア`, dòng 2
+  `PAS TASTA, Eriko Hashimoto` (bỏ qua tên đã có trong danh sách tác giả). Tốn thêm một request cho mỗi bài như vậy.
+  Logic ở `src/extension/credit.ts`.
 
 Cài đặt lưu trong `storage.local` của extension. Logic quyết định popup hiện gì nằm ở
 `src/extension/popupModel.ts`; `src/extension/popup.ts` chỉ biến nó thành DOM.
@@ -64,7 +69,11 @@ Cài đặt lưu trong `storage.local` của extension. Logic quyết định po
 - **Bấm vào dòng tác giả:** mở kênh của tác giả **đầu tiên** trên YouTube Music, nếu tác giả đó có kênh.
   Discord chỉ cho một link cho cả dòng nên không gắn link riêng cho từng tên được.
 - **Bấm vào ảnh bìa:** mở trang album, nếu bài có album.
-- Không có dòng thứ 3: Discord dùng `large_text` làm dòng thứ 3 (và chữ khi hover ảnh), nên extension không đặt nó.
+- **Rê chuột vào ảnh bìa:** hiện tên album của bài; nếu bài không thuộc album nào thì hiện tên playlist đang phát,
+  chỉ khi đó là playlist do người dùng tạo (ID bắt đầu bằng `PL`); còn lại không hiện gì.
+  Lưu ý: ID không cho biết playlist của ai, nên playlist công khai của người khác cũng được tính. Album, radio, "Nhạc đã thích" và
+  mọi danh sách do YouTube Music tự tạo đều bị loại. Discord dùng cùng `large_text` này làm dòng thứ 3 dưới tên tác giả của activity
+  kiểu Listening, nên dòng thứ 3 cũng xuất hiện khi có tên.
 - Quảng cáo (tài khoản không có Premium) **không** hiện lên Discord.
 - Danh sách tác giả và album lấy từ API nội bộ `youtubei/v1/next` của YouTube Music, gọi từ chính trang
   (`src/extension/page.ts`). API này không công khai và có thể đổi; khi gọi lỗi, extension quay về tên tác giả

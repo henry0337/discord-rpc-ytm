@@ -34,10 +34,10 @@ function sameDisplay(a: Track, b: Track): boolean {
     a.artistUrl === b.artistUrl &&
     a.albumUrl === b.albumUrl &&
     a.artworkUrl === b.artworkUrl &&
+    a.imageText === b.imageText &&
     a.button?.label === b.button?.label &&
     a.button?.url === b.button?.url &&
     a.paused === b.paused &&
-    a.statusText === b.statusText &&
     sameTimestamp(a.startTimestampMs, b.startTimestampMs) &&
     sameTimestamp(a.endTimestampMs, b.endTimestampMs)
   );

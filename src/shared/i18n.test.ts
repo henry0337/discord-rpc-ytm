@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { Locale } from 'discord-api-types/v10';
 import { LANGUAGES, playButtonLabel, resolveLanguage } from './i18n.ts';
 
 // Discord rejects button labels longer than 32 characters.
@@ -71,4 +72,26 @@ test('resolveLanguage falls back to English for unknown or empty input', () => {
 test('playButtonLabel localises through resolveLanguage', () => {
   assert.equal(playButtonLabel('vi-VN'), playButtonLabel('vi'));
   assert.notEqual(playButtonLabel('vi'), playButtonLabel('en'));
+});
+
+const DISCORD_LOCALES: string[] = Object.values(Locale);
+const baseLanguage = (code: string): string => code.split('-')[0]!;
+
+// Discord locales that have no label yet; resolveLanguage sends them to English.
+const UNSUPPORTED_DISCORD_LOCALES = new Set(['bg', 'cs', 'da', 'el', 'fi', 'hr', 'hu', 'id', 'lt', 'no', 'ro', 'sv-SE']);
+
+test('every language corresponds to a locale Discord supports', () => {
+  for (const { code } of LANGUAGES) {
+    assert.ok(
+      DISCORD_LOCALES.some((locale) => locale === code || baseLanguage(locale) === code),
+      `${code} is not a Discord locale`,
+    );
+  }
+});
+
+test('every Discord locale resolves to its own language, except the known gaps', () => {
+  for (const locale of DISCORD_LOCALES) {
+    const covered = baseLanguage(resolveLanguage(locale)) === baseLanguage(locale);
+    assert.equal(covered, !UNSUPPORTED_DISCORD_LOCALES.has(locale), locale);
+  }
 });

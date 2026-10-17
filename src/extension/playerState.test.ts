@@ -16,6 +16,8 @@ const details: TrackDetails = {
     { name: 'SKVLENT', channelId: null },
   ],
   albumId: ALBUM,
+  albumName: 'Miss You',
+  playlistName: null,
   credit: null,
 };
 
@@ -142,6 +144,25 @@ test('toPlayerState links the first artist only, and only when that artist has a
     artists: [{ name: 'First', channelId: null }, { name: 'Second', channelId: TRVNSPORTER }],
   };
   assert.equal(toPlayerState(snapshot({ details: unlinkedFirst }), NOW)?.artistChannelId, null);
+});
+
+test('toPlayerState names the album as the collection, before any playlist', () => {
+  const both = { ...details, albumName: 'Miss You', playlistName: 'Late night' };
+
+  assert.equal(toPlayerState(snapshot({ details: both }), NOW)?.collectionName, 'Miss You');
+});
+
+test('toPlayerState falls back to the playlist when the track has no album', () => {
+  const playlistOnly = { ...details, albumName: null, playlistName: 'Late night' };
+
+  assert.equal(toPlayerState(snapshot({ details: playlistOnly }), NOW)?.collectionName, 'Late night');
+});
+
+test('toPlayerState has no collection when there is neither an album nor a playlist', () => {
+  const neither = { ...details, albumName: null, playlistName: null };
+
+  assert.equal(toPlayerState(snapshot({ details: neither }), NOW)?.collectionName, null);
+  assert.equal(toPlayerState(snapshot({ videoId: null }), NOW)?.collectionName, null);
 });
 
 test('toPlayerState carries the album ID', () => {

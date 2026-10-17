@@ -1,5 +1,4 @@
 // Messages exchanged between the extension background script and the native host.
-import type { StatusText } from './settings.ts';
 
 export const HOST_NAME = 'com.ytm_discord_rpc.host';
 
@@ -22,6 +21,8 @@ export interface Track {
   /** Where clicking the artwork leads: the album page, when the track has an album. */
   albumUrl: string | null;
   artworkUrl: string | null;
+  /** Shown when hovering the artwork: the album's name, else the playlist being played from. */
+  imageText: string | null;
   button: TrackButton | null;
   /** Epoch ms at which the track (virtually) started, i.e. now - position. Null: no progress bar. */
   startTimestampMs: number | null;
@@ -29,8 +30,6 @@ export interface Track {
   endTimestampMs: number | null;
   /** Shown as paused: a progress bar would keep running, so it is left out. */
   paused: boolean;
-  /** Which part of the activity Discord shows next to the user's name. */
-  statusText: StatusText;
 }
 
 export type ExtensionToHost = { type: 'setTrack'; track: Track } | { type: 'clear' };

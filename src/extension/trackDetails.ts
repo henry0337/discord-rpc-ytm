@@ -20,6 +20,10 @@ export interface TrackDetails {
   artists: TrackArtist[];
   /** Album browse ID, or null for tracks without an album (user uploads, music videos...). */
   albumId: string | null;
+  /** The album's name: the playlist the artist made for the track. */
+  albumName: string | null;
+  /** The playlist being played from, when a person made it (not an album or a generated radio). */
+  playlistName: string | null;
   /** Who YouTube Music says is featured, when the title says so in a form that can be read. */
   credit: Credit | null;
 }
@@ -27,6 +31,9 @@ export interface TrackDetails {
 const CHANNEL_ID_PATTERN = /^UC[\w-]{22}$/;
 const ALBUM_ID_PATTERN = /^MPREb_[\w-]+$/;
 const ALBUM_PAGE_TYPE = 'MUSIC_PAGE_TYPE_ALBUM';
+// "PL…" playlists are made by people (someone else's too: the ID does not say whose). Everything
+// YouTube Music generates is left out: albums ("OLAK5uy_…"), radios ("RD…") and the liked songs ("LM").
+const USER_PLAYLIST_ID_PATTERN = /^PL[\w-]+$/;
 
 export function channelUrl(channelId: string): string {
   return `https://music.youtube.com/channel/${channelId}`;
@@ -38,6 +45,17 @@ export function albumUrl(albumId: string): string {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function findKey(node: unknown, key: string): unknown {
+  if (!isRecord(node) && !Array.isArray(node)) return undefined;
+  if (isRecord(node) && key in node) return node[key];
+
+  for (const child of Object.values(node)) {
+    const found = findKey(child, key);
+    if (found !== undefined) return found;
+  }
+  return undefined;
 }
 
 function findRenderer(node: unknown, videoId: string): Record<string, unknown> | null {
@@ -59,6 +77,12 @@ function parseTitle(title: unknown): string | null {
     .join('')
     .trim();
   return text === '' ? null : text;
+}
+
+/** The queue header reads "Playing from" over the name of the playlist or album being played. */
+function queueName(response: unknown): string | null {
+  const header = findKey(response, 'musicQueueHeaderRenderer');
+  return isRecord(header) ? parseTitle(header.subtitle) : null;
 }
 
 interface Run {
@@ -91,7 +115,11 @@ function toRun(raw: unknown): Run | null {
  * the artists, alternating with separator runs whose wording depends on the interface language, so
  * artists are told apart by position rather than by text.
  */
-export function parseTrackDetails(response: unknown, videoId: string): TrackDetails | null {
+export function parseTrackDetails(
+  response: unknown,
+  videoId: string,
+  playlistId: string | null = null,
+): TrackDetails | null {
   const renderer = findRenderer(response, videoId);
   const rawRuns = isRecord(renderer?.longBylineText) ? renderer.longBylineText.runs : undefined;
   if (!Array.isArray(rawRuns)) return null;
@@ -118,6 +146,8 @@ export function parseTrackDetails(response: unknown, videoId: string): TrackDeta
     title,
     artists,
     albumId: albumRun?.browseId ?? null,
+    albumName: albumRun ? cleanName(albumRun.text) : null,
+    playlistName: playlistId !== null && USER_PLAYLIST_ID_PATTERN.test(playlistId) ? queueName(response) : null,
     credit: title === null ? null : parseCredit(title),
   };
 }
@@ -126,6 +156,10 @@ export function parseTrackDetails(response: unknown, videoId: string): TrackDeta
  * The page-world script passes the details to the content script through a DOM attribute, which
  * the page itself could also write, so everything is re-validated here.
  */
+function cleanName(value: unknown): string | null {
+  return typeof value === 'string' && value.trim() !== '' ? value.trim() : null;
+}
+
 function sanitizeCredit(value: unknown): Credit | null {
   if (!isRecord(value) || typeof value.baseTitle !== 'string' || value.baseTitle.trim() === '') return null;
   if (!Array.isArray(value.names)) return null;
@@ -164,5 +198,13 @@ export function parseDetailsAttribute(raw: string | null): TrackDetails | null {
 
   const title = typeof value.title === 'string' && value.title.trim() !== '' ? value.title : null;
 
-  return { videoId: value.videoId, title, artists, albumId, credit: sanitizeCredit(value.credit) };
+  return {
+    videoId: value.videoId,
+    title,
+    artists,
+    albumId,
+    albumName: cleanName(value.albumName),
+    playlistName: cleanName(value.playlistName),
+    credit: sanitizeCredit(value.credit),
+  };
 }

@@ -1,5 +1,5 @@
 import { LANGUAGES } from '../shared/i18n.ts';
-import { headerLine, stateLine } from '../shared/display.ts';
+import { HEADER_LINE, stateLine } from '../shared/display.ts';
 import type { Track, TrackButton } from '../shared/protocol.ts';
 import { AUTO_LANGUAGE } from '../shared/settings.ts';
 import type { Status } from './status.ts';
@@ -24,13 +24,15 @@ export interface Banner {
   detail: string | null;
 }
 
-/** The "On Discord" card, drawn like the activity other people see. */
+/** The "On Discord (Preview)" card, drawn like the activity other people see. */
 export interface Card {
   header: string;
   title: string;
   artist: string;
   artistUrl: string | null;
   artworkUrl: string | null;
+  /** Hover text of the artwork. */
+  imageText: string | null;
   button: TrackButton | null;
   progress: boolean;
   /** Dimmed when Discord is not showing it right now. */
@@ -43,7 +45,6 @@ export interface PopupModel {
   /** Null: nothing is playing. */
   card: Card | null;
   note: string;
-  languageRow: boolean;
   languageNote: string;
 }
 
@@ -84,11 +85,12 @@ function bannerFor(status: Status): Banner | null {
 
 function cardFor(now: Track, shown: boolean): Card {
   return {
-    header: headerLine(now),
+    header: HEADER_LINE,
     title: now.title,
     artist: stateLine(now),
     artistUrl: now.artistUrl,
     artworkUrl: now.artworkUrl,
+    imageText: now.imageText,
     button: now.button,
     progress: now.startTimestampMs !== null && now.endTimestampMs !== null,
     dim: !shown,
@@ -115,7 +117,6 @@ export function buildPopupModel(status: Status): PopupModel {
     banner: bannerFor(status),
     card: status.now ? cardFor(status.now, status.shown) : null,
     note: status.now ? noteFor(status, status.now) : '',
-    languageRow: status.settings.showButton,
     languageNote: languageNoteFor(status),
   };
 }

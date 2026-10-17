@@ -16,6 +16,7 @@ function state(title: string, overrides: Partial<PlayerState> = {}): PlayerState
     albumId: null,
     titleWithoutCredit: null,
     credits: [],
+    collectionName: null,
     artworkUrl: null,
     videoId: null,
     startTimestampMs: 1000,
@@ -42,12 +43,18 @@ test('selectTrack returns the track of a playing tab without the playing flag or
     artistUrl: null,
     albumUrl: null,
     artworkUrl: null,
+    imageText: null,
     button: null,
     startTimestampMs: 1000,
     endTimestampMs: 2000,
     paused: false,
-    statusText: 'app',
   });
+});
+
+test('selectTrack shows the collection name when hovering the artwork', () => {
+  const track = selectTrack([entry('A', 1, { collectionName: 'Miss You' })], settings(), 'en');
+
+  assert.equal(track?.imageText, 'Miss You');
 });
 
 test('selectTrack turns the artist channel and the album into links', () => {
@@ -67,33 +74,17 @@ test('selectTrack adds a play button localised to the given language when the vi
   });
 });
 
-test('selectTrack leaves the play button out when it is switched off', () => {
-  const entries = [entry('A', 1, { videoId: 'dQw4w9WgXcQ' })];
-
-  assert.equal(selectTrack(entries, settings({ showButton: false }), 'en')?.button, null);
-});
-
-test('selectTrack leaves the progress bar out when it is switched off', () => {
-  const track = selectTrack([entry('A', 1)], settings({ showProgress: false }), 'en');
+test('selectTrack leaves the progress bar out for a paused track', () => {
+  const track = selectTrack([entry('A', 1, { playing: false })], settings({ whenPaused: 'show' }), 'en');
 
   assert.equal(track?.startTimestampMs, null);
   assert.equal(track?.endTimestampMs, null);
 });
 
-test('selectTrack passes the status text setting on', () => {
-  assert.equal(selectTrack([entry('A', 1)], settings({ statusText: 'title' }), 'en')?.statusText, 'title');
-});
-
-test('selectTrack shows the original title without the Latin version YouTube Music appends, by default', () => {
+test('selectTrack shows the original title without the Latin version YouTube Music appends', () => {
   const entries = [entry('ひとひら - Hitohira', 1)];
 
   assert.equal(selectTrack(entries, settings(), 'en')?.title, 'ひとひら');
-});
-
-test('selectTrack keeps the full title when the original title setting is off', () => {
-  const entries = [entry('ひとひら - Hitohira', 1)];
-
-  assert.equal(selectTrack(entries, settings({ originalTitle: false }), 'en')?.title, 'ひとひら - Hitohira');
 });
 
 const credited = (overrides: Partial<PlayerState> = {}) =>
@@ -135,13 +126,6 @@ test('selectTrack shows only the credited names when there is no artist', () => 
   const track = selectTrack([credited({ artist: '' })], settings(), 'vi');
 
   assert.equal(track?.artist, 'Eriko Hashimoto');
-});
-
-test('selectTrack leaves the title and the artists exactly as YouTube Music shows them when the original title setting is off', () => {
-  const track = selectTrack([credited()], settings({ originalTitle: false }), 'vi');
-
-  assert.equal(track?.title, 'ピュア - Pure (cùng với Eriko Hashimoto)');
-  assert.equal(track?.artist, 'PAS TASTA');
 });
 
 test('selectTrack prefers the most recently updated playing tab', () => {

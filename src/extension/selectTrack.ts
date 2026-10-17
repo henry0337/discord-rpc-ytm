@@ -44,27 +44,25 @@ export function selectTrack(
     artist,
     artistChannelId,
     albumId,
+    collectionName,
     artworkUrl,
     videoId,
     startTimestampMs,
     endTimestampMs,
     playing,
   } = chosen.state;
-  // A paused track gets no progress bar: Discord would keep counting up.
-  const withProgress = settings.showProgress && playing;
-  // With "original title" on, the credit leaves the title and its names join the artist line.
-  const shownTitle = settings.originalTitle ? originalTitle(titleWithoutCredit ?? title) : title;
-  const shownArtist = settings.originalTitle ? [artist, ...credits].filter(Boolean).join(', ') : artist;
+  // The credit leaves the title and its names join the artist line.
   return {
-    title: shownTitle,
-    artist: shownArtist,
+    title: originalTitle(titleWithoutCredit ?? title),
+    artist: [artist, ...credits].filter(Boolean).join(', '),
     artistUrl: artistChannelId ? channelUrl(artistChannelId) : null,
     albumUrl: albumId ? albumUrl(albumId) : null,
     artworkUrl,
-    button: settings.showButton ? buildPlayButton(videoId, locale) : null,
-    startTimestampMs: withProgress ? startTimestampMs : null,
-    endTimestampMs: withProgress ? endTimestampMs : null,
+    imageText: collectionName,
+    button: buildPlayButton(videoId, locale),
+    // A paused track gets no progress bar: Discord would keep counting up.
+    startTimestampMs: playing ? startTimestampMs : null,
+    endTimestampMs: playing ? endTimestampMs : null,
     paused: !playing,
-    statusText: settings.statusText,
   };
 }

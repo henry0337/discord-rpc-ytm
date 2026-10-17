@@ -1,6 +1,6 @@
 import { LANGUAGES } from '../shared/i18n.ts';
 import type { Track } from '../shared/protocol.ts';
-import { AUTO_LANGUAGE, type Settings, type StatusText } from '../shared/settings.ts';
+import { AUTO_LANGUAGE, type Settings } from '../shared/settings.ts';
 import { ext } from './api.ts';
 import { formatDiagnostics } from './diagnostics.ts';
 import { buildPopupModel, progressOf, type Banner, type Card, type Pill } from './popupModel.ts';
@@ -16,11 +16,6 @@ function byId<T extends HTMLElement>(id: string): T {
 
 const master = byId<HTMLButtonElement>('master');
 const masterText = byId('masterText');
-const statusSeg = byId('statusSeg');
-const progressSwitch = byId<HTMLButtonElement>('progressSwitch');
-const buttonSwitch = byId<HTMLButtonElement>('buttonSwitch');
-const originalTitleSwitch = byId<HTMLButtonElement>('originalTitleSwitch');
-const langRow = byId('langRow');
 const langNote = byId('langNote');
 const langSelect = byId<HTMLSelectElement>('lang');
 const pausedSelect = byId<HTMLSelectElement>('paused');
@@ -91,6 +86,7 @@ function renderBanner(banner: Banner | null): void {
 
 function renderCard(card: Card, note: string, now: Track): HTMLElement[] {
   const cover = element('div', 'cover');
+  if (card.imageText) cover.title = card.imageText;
   if (card.artworkUrl) {
     const image = document.createElement('img');
     image.src = card.artworkUrl;
@@ -101,7 +97,9 @@ function renderCard(card: Card, note: string, now: Track): HTMLElement[] {
   }
 
   const meta = element('div', 'meta');
-  meta.append(element('div', 'song', card.title));
+  const song = element('div', 'song', card.title);
+  song.title = card.title; // A long title is cut with an ellipsis; the browser shows it in full on hover.
+  meta.append(song);
   meta.append(
     card.artistUrl ? link(card.artistUrl, 'artist', card.artist) : element('span', 'artist', card.artist),
   );
@@ -126,7 +124,7 @@ function renderCard(card: Card, note: string, now: Track): HTMLElement[] {
   box.append(element('div', 'card-label', card.header), body);
   if (card.button) box.append(link(card.button.url, 'play', card.button.label));
 
-  return [element('div', 'now-title', 'On Discord'), box, element('p', 'hint', note)];
+  return [element('div', 'now-title', 'On Discord (Preview)'), box, element('p', 'hint', note)];
 }
 
 function renderNow(status: Status): void {
@@ -161,16 +159,9 @@ function isEditing(control: Element): boolean {
   return document.activeElement === control;
 }
 
-function renderSettings(settings: Settings, languageRow: boolean, languageNote: string): void {
+function renderSettings(settings: Settings, languageNote: string): void {
   master.setAttribute('aria-checked', String(settings.enabled));
   masterText.textContent = settings.enabled ? 'On' : 'Off';
-  progressSwitch.setAttribute('aria-checked', String(settings.showProgress));
-  buttonSwitch.setAttribute('aria-checked', String(settings.showButton));
-  originalTitleSwitch.setAttribute('aria-checked', String(settings.originalTitle));
-  for (const button of statusSeg.querySelectorAll('button')) {
-    button.setAttribute('aria-checked', String(button.dataset.value === settings.statusText));
-  }
-  langRow.hidden = !languageRow;
   langNote.textContent = languageNote;
   // Leave a dropdown alone while the user has it open.
   if (!isEditing(langSelect)) langSelect.value = settings.language;
@@ -187,7 +178,7 @@ function render(status: Status): void {
     byId('health').replaceChildren(pill('Helper', model.health.host), pill('Discord', model.health.discord));
     renderBanner(model.banner);
     renderNow(status);
-    renderSettings(status.settings, model.languageRow, model.languageNote);
+    renderSettings(status.settings, model.languageNote);
     byId('version').textContent = `Version ${status.version}`;
   }
 }
@@ -221,18 +212,9 @@ for (const { code, name } of LANGUAGES) {
 }
 
 master.addEventListener('click', () => latest && change({ enabled: !latest.settings.enabled }));
-progressSwitch.addEventListener('click', () => latest && change({ showProgress: !latest.settings.showProgress }));
-buttonSwitch.addEventListener('click', () => latest && change({ showButton: !latest.settings.showButton }));
-originalTitleSwitch.addEventListener(
-  'click',
-  () => latest && change({ originalTitle: !latest.settings.originalTitle }),
-);
 langSelect.addEventListener('change', () => change({ language: langSelect.value }));
 pausedSelect.addEventListener('change', () => change({ whenPaused: pausedSelect.value as Settings['whenPaused'] }));
-for (const button of statusSeg.querySelectorAll('button')) {
-  button.addEventListener('click', () => change({ statusText: button.dataset.value as StatusText }));
-}
-copyDiagnostics.addEventListener('click', () => {
+  copyDiagnostics.addEventListener('click', () => {
   if (!latest) return;
   const text = formatDiagnostics(latest, {
     userAgent: navigator.userAgent,

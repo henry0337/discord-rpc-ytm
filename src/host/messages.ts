@@ -1,5 +1,4 @@
 import type { ExtensionToHost, Track, TrackButton } from '../shared/protocol.ts';
-import type { StatusText } from '../shared/settings.ts';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -24,15 +23,16 @@ function parseLink(value: unknown): string | null | typeof INVALID {
   return typeof value === 'string' && value.startsWith('https://') ? value : INVALID;
 }
 
+// Absent or null means "no text"; anything else must be a non-empty string.
+function parseText(value: unknown): string | null | typeof INVALID {
+  if (value === undefined || value === null) return null;
+  return typeof value === 'string' && value !== '' ? value : INVALID;
+}
+
 // A missing timestamp means "no progress bar".
 function parseTimestamp(value: unknown): number | null | typeof INVALID {
   if (value === undefined || value === null) return null;
   return typeof value === 'number' && Number.isFinite(value) ? value : INVALID;
-}
-
-function parseStatusText(value: unknown): StatusText | typeof INVALID {
-  if (value === undefined) return 'app';
-  return value === 'app' || value === 'title' || value === 'artist' ? value : INVALID;
 }
 
 function parseTrack(value: unknown): Track | null {
@@ -45,16 +45,16 @@ function parseTrack(value: unknown): Track | null {
   const button = parseButton(value.button);
   const artistUrl = parseLink(value.artistUrl);
   const albumUrl = parseLink(value.albumUrl);
+  const imageText = parseText(value.imageText);
   const startTimestampMs = parseTimestamp(value.startTimestampMs);
   const endTimestampMs = parseTimestamp(value.endTimestampMs);
-  const statusText = parseStatusText(value.statusText);
   if (
     button === INVALID ||
     artistUrl === INVALID ||
     albumUrl === INVALID ||
+    imageText === INVALID ||
     startTimestampMs === INVALID ||
-    endTimestampMs === INVALID ||
-    statusText === INVALID
+    endTimestampMs === INVALID
   ) {
     return null;
   }
@@ -65,11 +65,11 @@ function parseTrack(value: unknown): Track | null {
     artistUrl,
     albumUrl,
     artworkUrl,
+    imageText,
     button,
     startTimestampMs,
     endTimestampMs,
     paused: value.paused === true,
-    statusText,
   };
 }
 

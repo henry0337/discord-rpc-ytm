@@ -1,7 +1,6 @@
 import type { SetActivity } from '@xhayper/discord-rpc';
 import { stateLine } from '../shared/display.ts';
 import type { Track } from '../shared/protocol.ts';
-import type { StatusText } from '../shared/settings.ts';
 
 const ACTIVITY_TYPE_LISTENING = 2;
 const MIN_TEXT_LENGTH = 2;
@@ -21,14 +20,15 @@ function fitButtonLabel(label: string): string {
   return characters.slice(0, MAX_BUTTON_LABEL_LENGTH - 1).join('') + '…';
 }
 
-// What Discord shows next to the user's name: the app name, the state line or the details line.
-const STATUS_DISPLAY_TYPE: Record<StatusText, 0 | 1 | 2> = { app: 0, artist: 1, title: 2 };
+// Discord shows the state line (the artists) next to the user's name; 0 would be the app name and
+// 2 the details line (the title).
+const STATUS_DISPLAY_ARTIST = 1;
 
 export function buildActivity(track: Track): SetActivity {
   const activity: SetActivity = {
     type: ACTIVITY_TYPE_LISTENING,
     details: fitText(track.title),
-    statusDisplayType: STATUS_DISPLAY_TYPE[track.statusText],
+    statusDisplayType: STATUS_DISPLAY_ARTIST,
   };
 
   // A progress bar keeps running by itself, so it is only shown while actually playing.
@@ -42,7 +42,8 @@ export function buildActivity(track: Track): SetActivity {
   if (track.artist && track.artistUrl) activity.stateUrl = track.artistUrl;
   if (track.artworkUrl) activity.largeImageKey = track.artworkUrl;
   if (track.artworkUrl && track.albumUrl) activity.largeImageUrl = track.albumUrl;
-  // largeImageText is left unset on purpose: Discord shows it as a third line under the artist.
+  // Discord shows this as the hover text of the artwork and, for a Listening activity, also as a third line.
+  if (track.artworkUrl && track.imageText) activity.largeImageText = fitText(track.imageText);
   if (track.button) {
     activity.buttons = [{ label: fitButtonLabel(track.button.label), url: track.button.url }];
   }

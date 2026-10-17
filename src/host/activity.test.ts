@@ -9,11 +9,11 @@ const track: Track = {
   artistUrl: 'https://music.youtube.com/channel/UCvG6SZfCwSCCjifUpGHw1EA',
   albumUrl: 'https://music.youtube.com/browse/MPREb_nWA3z8K9P9T',
   artworkUrl: 'https://yt3.googleusercontent.com/abc=w544-h544-l90-rj',
+  imageText: null,
   button: { label: 'Phát trên YouTube Music (Web)', url: 'https://music.youtube.com/watch?v=abc' },
   startTimestampMs: 1_000_000,
   endTimestampMs: 1_176_000,
   paused: false,
-  statusText: 'app',
 };
 
 test('buildActivity shows a Listening activity with clickable artist and artwork, progress bar and button', () => {
@@ -26,15 +26,20 @@ test('buildActivity shows a Listening activity with clickable artist and artwork
     largeImageUrl: 'https://music.youtube.com/browse/MPREb_nWA3z8K9P9T',
     startTimestamp: 1_000_000,
     endTimestamp: 1_176_000,
-    statusDisplayType: 0,
+    statusDisplayType: 1,
     buttons: [
       { label: 'Phát trên YouTube Music (Web)', url: 'https://music.youtube.com/watch?v=abc' },
     ],
   });
 });
 
-test('buildActivity never sets the image text, which Discord would show as a third line', () => {
+test('buildActivity sets the hover text of the artwork from the image text', () => {
+  assert.equal(buildActivity({ ...track, imageText: 'Miss You' }).largeImageText, 'Miss You');
+});
+
+test('buildActivity leaves the hover text out when the track has none, or has no artwork to hover', () => {
   assert.equal('largeImageText' in buildActivity(track), false);
+  assert.equal('largeImageText' in buildActivity({ ...track, imageText: 'Miss You', artworkUrl: null }), false);
 });
 
 test('buildActivity omits the artwork when the track has none', () => {
@@ -90,10 +95,8 @@ test('buildActivity truncates text to the 128 characters Discord allows', () => 
   assert.ok(activity.details?.endsWith('…'));
 });
 
-test('buildActivity picks what Discord shows next to the name from the status text setting', () => {
-  assert.equal(buildActivity({ ...track, statusText: 'app' }).statusDisplayType, 0);
-  assert.equal(buildActivity({ ...track, statusText: 'artist' }).statusDisplayType, 1);
-  assert.equal(buildActivity({ ...track, statusText: 'title' }).statusDisplayType, 2);
+test('buildActivity shows the artists next to the name', () => {
+  assert.equal(buildActivity(track).statusDisplayType, 1);
 });
 
 test('buildActivity omits the progress bar when the track has no timestamps', () => {

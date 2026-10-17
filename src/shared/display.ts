@@ -11,9 +11,8 @@ export function stateLine(track: Track): string {
   return track.artist ? `Paused · ${track.artist}` : 'Paused';
 }
 
-/** The "Listening to …" line, whose last part follows the status text setting. */
-export function headerLine(track: Track): string {
-  const subject =
-    track.statusText === 'title' ? track.title : track.statusText === 'artist' ? track.artist : APP_NAME;
-  return `Listening to ${subject || APP_NAME}`;
-}
+/**
+ * The "Listening to …" line of the profile card. Discord always fills in the name of the
+ * application, which is set in the Developer Portal and is not part of the activity.
+ */
+export const HEADER_LINE = `Listening to ${APP_NAME}`;

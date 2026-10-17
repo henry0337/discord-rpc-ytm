@@ -8,11 +8,11 @@ const validTrack = {
   artistUrl: 'https://music.youtube.com/channel/UCvG6SZfCwSCCjifUpGHw1EA',
   albumUrl: 'https://music.youtube.com/browse/MPREb_nWA3z8K9P9T',
   artworkUrl: 'https://img/1',
+  imageText: null,
   button: { label: 'Play on YouTube Music (Web)', url: 'https://music.youtube.com/watch?v=abc' },
   startTimestampMs: 1000,
   endTimestampMs: 2000,
   paused: false,
-  statusText: 'app',
 };
 
 test('parseExtensionMessage accepts a clear message', () => {
@@ -23,6 +23,19 @@ test('parseExtensionMessage accepts a setTrack message with a valid track', () =
   const message = { type: 'setTrack', track: validTrack };
 
   assert.deepEqual(parseExtensionMessage(message), message);
+});
+
+test('parseExtensionMessage accepts artwork text, or none, and rejects anything else', () => {
+  const withText = { type: 'setTrack', track: { ...validTrack, imageText: 'Miss You' } };
+  assert.deepEqual(parseExtensionMessage(withText), withText);
+
+  const { imageText: _i, ...older } = validTrack;
+  assert.deepEqual(parseExtensionMessage({ type: 'setTrack', track: older }), { type: 'setTrack', track: validTrack });
+
+  for (const imageText of ['', 7, {}]) {
+    const message = { type: 'setTrack', track: { ...validTrack, imageText } };
+    assert.equal(parseExtensionMessage(message), null, JSON.stringify(imageText));
+  }
 });
 
 test('parseExtensionMessage accepts a track without artwork', () => {
@@ -118,23 +131,21 @@ test('parseExtensionMessage accepts a track without timestamps, meaning no progr
   assert.deepEqual(parseExtensionMessage(message), message);
 });
 
-test('parseExtensionMessage accepts every status text and a paused track', () => {
-  for (const statusText of ['app', 'title', 'artist']) {
-    const message = { type: 'setTrack', track: { ...validTrack, statusText, paused: true } };
-    assert.deepEqual(parseExtensionMessage(message), message, statusText);
-  }
+test('parseExtensionMessage accepts a paused track', () => {
+  const message = { type: 'setTrack', track: { ...validTrack, paused: true } };
+
+  assert.deepEqual(parseExtensionMessage(message), message);
 });
 
-test('parseExtensionMessage defaults a missing paused flag and status text', () => {
-  const { paused: _p, statusText: _s, ...older } = validTrack;
+test('parseExtensionMessage defaults a missing paused flag', () => {
+  const { paused: _p, ...older } = validTrack;
   const parsed = parseExtensionMessage({ type: 'setTrack', track: older });
 
-  assert.deepEqual(parsed, { type: 'setTrack', track: { ...older, paused: false, statusText: 'app' } });
+  assert.deepEqual(parsed, { type: 'setTrack', track: { ...older, paused: false } });
 });
 
-test('parseExtensionMessage rejects an unknown status text or a non-boolean paused flag', () => {
-  for (const patch of [{ statusText: 'everything' }, { paused: 'yes' }]) {
-    const message = { type: 'setTrack', track: { ...validTrack, ...patch } };
-    assert.equal(parseExtensionMessage(message), null, JSON.stringify(patch));
-  }
+test('parseExtensionMessage rejects a non-boolean paused flag', () => {
+  const message = { type: 'setTrack', track: { ...validTrack, paused: 'yes' } };
+
+  assert.equal(parseExtensionMessage(message), null);
 });

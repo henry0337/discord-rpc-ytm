@@ -13,6 +13,7 @@ function playing(overrides: Partial<PlayerState> = {}, now = T0, position = 10):
     albumId: null,
     titleWithoutCredit: null,
     credits: [],
+    collectionName: null,
     artworkUrl: null,
     videoId: null,
     startTimestampMs: now - position * 1000,
@@ -116,6 +117,16 @@ test('reports credited names that show up for a track that was already reported'
   const message = reporter.observe(credited(T0 + 3000), T0 + 3000);
 
   assert.deepEqual(message?.type === 'state' && message.state?.credits, ['Eriko Hashimoto']);
+});
+
+test('reports a collection name that shows up for a track that was already reported', () => {
+  const reporter = newReporter();
+  reporter.observe(playing(), T0);
+  reporter.observe(playing({}, T0 + 1000, 11), T0 + 1000);
+
+  const named = (now: number) => playing({ collectionName: 'Miss You' }, now, 12);
+  assert.equal(reporter.observe(named(T0 + 2000), T0 + 2000), undefined);
+  assert.equal(reporter.observe(named(T0 + 3000), T0 + 3000)?.type, 'state');
 });
 
 test('reports pausing after it is stable', () => {

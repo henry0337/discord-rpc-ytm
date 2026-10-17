@@ -13,11 +13,11 @@ const track: Track = {
   artistUrl: 'https://music.youtube.com/channel/UCvG6SZfCwSCCjifUpGHw1EA',
   albumUrl: null,
   artworkUrl: 'https://img/1',
+  imageText: null,
   button: { label: 'Phát trên YouTube Music (Web)', url: 'https://music.youtube.com/watch?v=abc' },
   startTimestampMs: NOW_MS - 72_000,
   endTimestampMs: NOW_MS - 72_000 + 212_000,
   paused: false,
-  statusText: 'app',
 };
 
 const status: Status = {
@@ -78,18 +78,14 @@ test('there is no card when nothing is playing', () => {
 });
 
 test('the card mirrors the Discord activity', () => {
-  // `now` is built from the settings, so its status text is the one the user chose.
-  const { card } = buildPopupModel({
-    ...status,
-    settings: { ...DEFAULT_SETTINGS, statusText: 'title' },
-    now: { ...track, statusText: 'title' },
-  });
+  const { card } = buildPopupModel(status);
 
-  assert.equal(card?.header, 'Listening to Lycoris');
+  assert.equal(card?.header, 'Listening to YouTube Music');
   assert.equal(card?.title, 'Lycoris');
   assert.equal(card?.artist, 'auritni');
   assert.equal(card?.artistUrl, track.artistUrl);
   assert.equal(card?.artworkUrl, 'https://img/1');
+  assert.equal(card?.imageText, null);
   assert.deepEqual(card?.button, track.button);
   assert.equal(card?.dim, false);
   assert.equal(card?.progress, true);
@@ -119,14 +115,6 @@ test('the note reminds that Discord hides your own button, only when there is on
     'This is what others see. Discord does not show you your own button.',
   );
   assert.equal(buildPopupModel({ ...status, now: { ...track, button: null } }).note, 'This is what others see.');
-});
-
-test('the language row only matters while the play button is on', () => {
-  assert.equal(buildPopupModel(status).languageRow, true);
-  assert.equal(
-    buildPopupModel({ ...status, settings: { ...DEFAULT_SETTINGS, showButton: false } }).languageRow,
-    false,
-  );
 });
 
 test('the language note names the browser language while automatic, or says the user chose', () => {

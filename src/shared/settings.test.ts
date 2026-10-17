@@ -10,11 +10,7 @@ test('the defaults match the previous behaviour of the extension', () => {
   assert.deepEqual(DEFAULT_SETTINGS, {
     enabled: true,
     language: 'auto',
-    statusText: 'app',
-    showProgress: true,
-    showButton: true,
     whenPaused: 'hide',
-    originalTitle: true,
   });
 });
 
@@ -22,11 +18,7 @@ test('parseSettings keeps valid stored values', () => {
   const stored = {
     enabled: false,
     language: 'vi',
-    statusText: 'title',
-    showProgress: false,
-    showButton: false,
     whenPaused: 'show',
-    originalTitle: false,
   };
 
   assert.deepEqual(parseSettings(stored), stored);
@@ -36,19 +28,15 @@ test('parseSettings falls back to the default for each invalid value separately'
   const settings = parseSettings({
     enabled: 'yes',
     language: 'klingon',
-    statusText: 'nonsense',
-    showProgress: 1,
-    showButton: null,
     whenPaused: 'later',
-    originalTitle: 'maybe',
   });
 
   assert.deepEqual(settings, DEFAULT_SETTINGS);
   assert.equal(parseSettings({ enabled: false, language: 'klingon' }).enabled, false);
 });
 
-test('parseSettings ignores keys it does not know', () => {
-  assert.deepEqual(parseSettings({ somethingElse: 1 }), DEFAULT_SETTINGS);
+test('parseSettings ignores keys it does not know, such as settings that no longer exist', () => {
+  assert.deepEqual(parseSettings({ somethingElse: 1, statusText: 'title', showButton: false }), DEFAULT_SETTINGS);
 });
 
 test('SETTING_KEYS lists every setting so storage can be read in one call', () => {
@@ -57,14 +45,13 @@ test('SETTING_KEYS lists every setting so storage can be read in one call', () =
 
 test('validatePatch keeps only known keys with valid values', () => {
   const patch = validatePatch({
-    showButton: false,
-    statusText: 'artist',
+    enabled: false,
+    whenPaused: 'show',
     language: 'klingon',
-    whenPaused: 5,
     unknown: true,
   });
 
-  assert.deepEqual(patch, { showButton: false, statusText: 'artist' });
+  assert.deepEqual(patch, { enabled: false, whenPaused: 'show' });
 });
 
 test('validatePatch returns an empty patch for input that is not an object', () => {

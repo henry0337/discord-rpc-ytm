@@ -12,11 +12,11 @@ function track(overrides: Partial<Track> = {}): Track {
     artistUrl: null,
     albumUrl: null,
     artworkUrl: null,
+    imageText: null,
     button: null,
     startTimestampMs: 1_000_000,
     endTimestampMs: 1_200_000,
     paused: false,
-    statusText: 'app',
     ...overrides,
   };
 }
@@ -163,19 +163,32 @@ test('applies an update when the button link appears after the track was first s
   assert.deepEqual(calls, ['set', 'set']);
 });
 
-test('applies an update when pausing, resuming or changing the status text', async () => {
+test('applies an update when pausing or resuming', async () => {
   const { calls, controller } = setup();
   controller.setConnected(true);
   controller.setTrack(track());
   await Promise.resolve();
 
-  for (const change of [{ paused: true }, { statusText: 'title' as const }]) {
+  for (const change of [{ paused: true }, { paused: false }]) {
     mock.timers.tick(MIN_INTERVAL_MS);
     controller.setTrack(track(change));
     await Promise.resolve();
   }
 
   assert.deepEqual(calls, ['set', 'set', 'set']);
+});
+
+test('applies an update when the artwork text changes', async () => {
+  const { calls, controller } = setup();
+  controller.setConnected(true);
+  controller.setTrack(track());
+  await Promise.resolve();
+
+  mock.timers.tick(MIN_INTERVAL_MS);
+  controller.setTrack(track({ imageText: 'Miss You' }));
+  await Promise.resolve();
+
+  assert.deepEqual(calls, ['set', 'set']);
 });
 
 test('applies an update when the progress bar is switched off and on', async () => {

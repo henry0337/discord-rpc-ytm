@@ -83,6 +83,37 @@ test('parseTrackDetails finds the album', () => {
   assert.equal(parseTrackDetails(response('vid', multiArtistRuns), 'vid')?.albumId, ALBUM);
 });
 
+test('parseTrackDetails reads the name of the album', () => {
+  assert.equal(parseTrackDetails(response('vid', multiArtistRuns), 'vid')?.albumName, 'Miss You');
+});
+
+// The queue header reads "Playing from" over the name of what is being played.
+const withQueueName = (base: object, name: string) => ({
+  ...base,
+  header: {
+    musicQueueHeaderRenderer: { title: { runs: [text('Playing from')] }, subtitle: { runs: [text(name)] } },
+  },
+});
+
+test('parseTrackDetails names the playlist being played, when a person made it', () => {
+  const queue = withQueueName(response('vid', multiArtistRuns), 'Late night');
+
+  assert.equal(parseTrackDetails(queue, 'vid', 'PLabc_123-xyz')?.playlistName, 'Late night');
+});
+
+test('parseTrackDetails does not name what YouTube Music generates (album, radio, liked songs) or an unknown queue', () => {
+  const queue = withQueueName(response('vid', multiArtistRuns), 'Miss You');
+
+  for (const playlistId of ['OLAK5uy_mGVoHgLCl4hwXqHaORcOZFKXb6pNyR6D4', 'RDAMVMvid', 'RDEMabc', 'LM', null]) {
+    assert.equal(parseTrackDetails(queue, 'vid', playlistId)?.playlistName, null, String(playlistId));
+  }
+  assert.equal(parseTrackDetails(queue, 'vid')?.playlistName, null);
+});
+
+test('parseTrackDetails has no playlist name when the queue carries none', () => {
+  assert.equal(parseTrackDetails(response('vid', multiArtistRuns), 'vid', 'PLabc')?.playlistName, null);
+});
+
 test('parseTrackDetails keeps an artist that has no channel, without a link', () => {
   const runs = [artist('Linked', TRVNSPORTER), text(' & '), text('Unlinked'), text(' • '), text('2020')];
 
@@ -97,6 +128,7 @@ test('parseTrackDetails has no album for a video without one, and does not mista
   const details = parseTrackDetails(response('vid', runs), 'vid');
 
   assert.equal(details?.albumId, null);
+  assert.equal(details?.albumName, null);
   assert.deepEqual(details?.artists, [{ name: 'Some Channel', channelId: TRVNSPORTER }]);
 });
 
@@ -186,6 +218,8 @@ test('parseDetailsAttribute round-trips well-formed details', () => {
     title: 'ひとひら - Hitohira',
     artists: [{ name: 'A', channelId: TRVNSPORTER }, { name: 'B', channelId: null }],
     albumId: ALBUM,
+    albumName: 'Miss You',
+    playlistName: 'Late night',
     credit: { baseTitle: 'ピュア - Pure', names: ['Eriko Hashimoto', 'Someone'] },
   };
 
@@ -212,8 +246,24 @@ test('parseDetailsAttribute drops IDs that do not look like channel or album IDs
     title: null,
     artists: [{ name: 'A', channelId: null }],
     albumId: null,
+    albumName: null,
+    playlistName: null,
     credit: null,
   });
+});
+
+test('parseDetailsAttribute trims the album and playlist names and drops anything that is not a name', () => {
+  const base = { videoId: 'vid', title: null, artists: [], albumId: null };
+
+  const named = parseDetailsAttribute(JSON.stringify({ ...base, albumName: ' Miss You ', playlistName: 'Late night' }));
+  assert.equal(named?.albumName, 'Miss You');
+  assert.equal(named?.playlistName, 'Late night');
+
+  for (const bad of ['', '   ', 5, null, {}]) {
+    const details = parseDetailsAttribute(JSON.stringify({ ...base, albumName: bad, playlistName: bad }));
+    assert.equal(details?.albumName, null, JSON.stringify(bad));
+    assert.equal(details?.playlistName, null, JSON.stringify(bad));
+  }
 });
 
 test('parseDetailsAttribute drops a credit that is malformed or empty', () => {

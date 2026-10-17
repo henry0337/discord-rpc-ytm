@@ -7,7 +7,8 @@ import { parseTrackDetails, type TrackDetails } from './trackDetails.ts';
 // lives in. Results are handed over through DOM attributes, which both worlds can see.
 
 interface PlayerApi {
-  getVideoData?: () => { video_id?: string } | undefined;
+  getVideoData?: () => { video_id?: string; list?: string } | undefined;
+  getPlaylistId?: () => string | null | undefined;
   classList: DOMTokenList;
 }
 
@@ -38,6 +39,14 @@ function readVideoId(): string | null {
   return new URL(location.href).searchParams.get('v');
 }
 
+/** The playlist the queue is playing from, if the page says so. */
+function readPlaylistId(): string | null {
+  const api = player();
+  const id =
+    api?.getPlaylistId?.() ?? api?.getVideoData?.()?.list ?? new URL(location.href).searchParams.get('list');
+  return id ? id : null;
+}
+
 function setAttribute(name: string, value: string | null): void {
   const root = document.documentElement;
   if (value === null) root.removeAttribute(name);
@@ -58,46 +67,57 @@ function requestContext(language?: string): InnertubeContext {
 
 // The same endpoint the player uses to describe a track: it lists every artist with its channel
 // and the album, which the media session does not.
-async function fetchNext(videoId: string, language?: string): Promise<TrackDetails | null> {
+interface NextOptions {
+  language?: string;
+  playlistId?: string | null;
+}
+
+async function fetchNext(videoId: string, { language, playlistId = null }: NextOptions = {}): Promise<TrackDetails | null> {
   try {
     const response = await fetch('/youtubei/v1/next?prettyPrint=false', {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ context: requestContext(language), videoId }),
+      body: JSON.stringify({ context: requestContext(language), videoId, ...(playlistId && { playlistId }) }),
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
-    return response.ok ? parseTrackDetails(await response.json(), videoId) : null;
+    return response.ok ? parseTrackDetails(await response.json(), videoId, playlistId) : null;
   } catch {
     return null;
   }
 }
 
-async function fetchDetails(videoId: string): Promise<TrackDetails | null> {
-  const details = await fetchNext(videoId);
+async function fetchDetails(videoId: string, playlistId: string | null): Promise<TrackDetails | null> {
+  // Asking within a playlist also names it; if that fails (a stale ID), the track alone still works.
+  const details = (await fetchNext(videoId, { playlistId })) ?? (playlistId ? await fetchNext(videoId) : null);
   if (!details || details.credit || !details.title || !mayCarryCredit(details.title)) return details;
 
   // The credit is worded in the interface language ("cùng với", "avec"...), which cannot be read
   // reliably. In English it is always "(feat. NAMES)", so ask for that and read the credit there.
-  const english = await fetchNext(videoId, 'en');
+  const english = await fetchNext(videoId, { language: 'en' });
   return { ...details, credit: english?.credit ?? null };
 }
 
-function remember(videoId: string, details: TrackDetails): void {
-  if (cache.size >= CACHE_LIMIT) cache.delete(cache.keys().next().value as string);
-  cache.set(videoId, details);
+// The same track can be played from different playlists, and the playlist's name is part of the details.
+function detailsKey(videoId: string, playlistId: string | null): string {
+  return `${videoId}|${playlistId ?? ''}`;
 }
 
-function ensureDetails(videoId: string): void {
-  if (cache.has(videoId) || fetching.has(videoId)) return;
-  const failedRecently = Date.now() - (failedAt.get(videoId) ?? -Infinity) < FAILURE_BACKOFF_MS;
+function remember(key: string, details: TrackDetails): void {
+  if (cache.size >= CACHE_LIMIT) cache.delete(cache.keys().next().value as string);
+  cache.set(key, details);
+}
+
+function ensureDetails(videoId: string, playlistId: string | null, key: string): void {
+  if (cache.has(key) || fetching.has(key)) return;
+  const failedRecently = Date.now() - (failedAt.get(key) ?? -Infinity) < FAILURE_BACKOFF_MS;
   if (failedRecently) return;
 
-  fetching.add(videoId);
-  void fetchDetails(videoId).then((details) => {
-    fetching.delete(videoId);
-    if (details) remember(videoId, details);
-    else failedAt.set(videoId, Date.now());
+  fetching.add(key);
+  void fetchDetails(videoId, playlistId).then((details) => {
+    fetching.delete(key);
+    if (details) remember(key, details);
+    else failedAt.set(key, Date.now());
     tick();
   });
 }
@@ -112,13 +132,19 @@ function tick(): void {
       setAttribute(DETAILS_ATTRIBUTE, null);
       return;
     }
-    ensureDetails(videoId);
+    const playlistId = readPlaylistId();
+    const key = detailsKey(videoId, playlistId);
+    ensureDetails(videoId, playlistId, key);
 
+    // While the details for a new playlist load, the ones already known for this track keep showing.
     // A failed lookup is reported as "no artists known" so the content script stops waiting and
     // falls back to the media session instead of showing nothing.
     const details =
-      cache.get(videoId) ??
-      (failedAt.has(videoId) ? { videoId, title: null, artists: [], albumId: null, credit: null } : undefined);
+      cache.get(key) ??
+      [...cache.values()].findLast((known) => known.videoId === videoId) ??
+      (failedAt.has(key)
+        ? { videoId, title: null, artists: [], albumId: null, albumName: null, playlistName: null, credit: null }
+        : undefined);
     setAttribute(DETAILS_ATTRIBUTE, details ? JSON.stringify(details) : null);
   } catch {
     // The player can be mid-initialisation; try again on the next poll.
