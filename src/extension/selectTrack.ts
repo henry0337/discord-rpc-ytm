@@ -1,6 +1,7 @@
 import type { Track } from '../shared/protocol.ts';
 import type { Settings } from '../shared/settings.ts';
 import { originalTitle } from './originalTitle.ts';
+import { playbackLabel } from '../shared/i18n.ts';
 import { buildPlayButton } from './playButton.ts';
 import type { PlayerState } from './playerState.ts';
 import { albumUrl, channelUrl, playlistUrl } from './trackDetails.ts';
@@ -22,7 +23,7 @@ function mostRecent(entries: TabEntry[]): TabEntry | undefined {
 /**
  * Picks what to show on Discord and shapes it by the user's settings: the most recently updated
  * playing tab, else (if asked to) the most recently paused one, else nothing. `locale` decides the
- * language of the "Play on YouTube Music" button.
+ * language of the "Play on YouTube Music" button and of the playback icon's hover text.
  */
 export function selectTrack(
   entries: Iterable<TabEntry>,
@@ -61,6 +62,7 @@ export function selectTrack(
     imageUrl: playlistId ? playlistUrl(playlistId) : albumId ? albumUrl(albumId) : null,
     artworkUrl,
     imageText: collectionName,
+    playbackText: playbackLabel(locale, !playing),
     button: buildPlayButton(videoId, locale),
     // A paused track gets no progress bar: Discord would keep counting up.
     startTimestampMs: playing ? startTimestampMs : null,

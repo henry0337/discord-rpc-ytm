@@ -9,6 +9,7 @@ const validTrack = {
   imageUrl: 'https://music.youtube.com/browse/MPREb_nWA3z8K9P9T',
   artworkUrl: 'https://img/1',
   imageText: null,
+  playbackText: null,
   button: { label: 'Play on YouTube Music (Web)', url: 'https://music.youtube.com/watch?v=abc' },
   startTimestampMs: 1000,
   endTimestampMs: 2000,
@@ -35,6 +36,19 @@ test('parseExtensionMessage accepts artwork text, or none, and rejects anything 
   for (const imageText of ['', 7, {}]) {
     const message = { type: 'setTrack', track: { ...validTrack, imageText } };
     assert.equal(parseExtensionMessage(message), null, JSON.stringify(imageText));
+  }
+});
+
+test('parseExtensionMessage accepts playback text, or none, and rejects anything else', () => {
+  const withText = { type: 'setTrack', track: { ...validTrack, playbackText: 'Playing' } };
+  assert.deepEqual(parseExtensionMessage(withText), withText);
+
+  const { playbackText: _p, ...older } = validTrack;
+  assert.deepEqual(parseExtensionMessage({ type: 'setTrack', track: older }), { type: 'setTrack', track: validTrack });
+
+  for (const playbackText of ['', 7, {}]) {
+    const message = { type: 'setTrack', track: { ...validTrack, playbackText } };
+    assert.equal(parseExtensionMessage(message), null, JSON.stringify(playbackText));
   }
 });
 

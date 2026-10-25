@@ -23,6 +23,8 @@ export interface Track {
   artworkUrl: string | null;
   /** Shown when hovering the artwork: the playlist being played from if a person made it, else the album's name. */
   imageText: string | null;
+  /** Hover text of the playback icon at the corner of the artwork, in the user's language. */
+  playbackText: string | null;
   button: TrackButton | null;
   /** Epoch ms at which the track (virtually) started, i.e. now - position. Null: no progress bar. */
   startTimestampMs: number | null;

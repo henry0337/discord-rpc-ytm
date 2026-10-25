@@ -13,6 +13,7 @@ function track(overrides: Partial<Track> = {}): Track {
     imageUrl: null,
     artworkUrl: null,
     imageText: null,
+    playbackText: null,
     button: null,
     startTimestampMs: 1_000_000,
     endTimestampMs: 1_200_000,
@@ -186,6 +187,19 @@ test('applies an update when the artwork text changes', async () => {
 
   mock.timers.tick(MIN_INTERVAL_MS);
   controller.setTrack(track({ imageText: 'Miss You' }));
+  await Promise.resolve();
+
+  assert.deepEqual(calls, ['set', 'set']);
+});
+
+test('applies an update when the playback text changes', async () => {
+  const { calls, controller } = setup();
+  controller.setConnected(true);
+  controller.setTrack(track());
+  await Promise.resolve();
+
+  mock.timers.tick(MIN_INTERVAL_MS);
+  controller.setTrack(track({ playbackText: 'Playing' }));
   await Promise.resolve();
 
   assert.deepEqual(calls, ['set', 'set']);

@@ -45,11 +45,20 @@ test('selectTrack returns the track of a playing tab without the playing flag or
     imageUrl: null,
     artworkUrl: null,
     imageText: null,
+    playbackText: 'Playing',
     button: null,
     startTimestampMs: 1000,
     endTimestampMs: 2000,
     paused: false,
   });
+});
+
+test('selectTrack words the playback icon in the language of the user, for playing and paused', () => {
+  const playing = selectTrack([entry('A', 1)], settings(), 'vi');
+  const paused = selectTrack([entry('A', 1, { playing: false })], settings({ whenPaused: 'show' }), 'vi');
+
+  assert.equal(playing?.playbackText, 'Đang phát');
+  assert.equal(paused?.playbackText, 'Tạm dừng');
 });
 
 test('selectTrack shows the collection name when hovering the artwork', () => {

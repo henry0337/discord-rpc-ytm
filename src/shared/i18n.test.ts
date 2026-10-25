@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Locale } from 'discord-api-types/v10';
-import { LANGUAGES, playButtonLabel, resolveLanguage } from './i18n.ts';
+import { LANGUAGES, playButtonLabel, playbackLabel, resolveLanguage } from './i18n.ts';
 
 // Discord rejects button labels longer than 32 characters.
 const MAX_LABEL_LENGTH = 32;
@@ -12,6 +12,19 @@ test('every language has a native name and a non-empty label within the Discord 
     assert.ok(playButton.length > 0, `${code} label`);
     assert.ok([...playButton].length <= MAX_LABEL_LENGTH, `${code} label too long: ${playButton}`);
   }
+});
+
+test('every language words both playback states, differently', () => {
+  for (const { code, playing, paused } of LANGUAGES) {
+    assert.ok(playing.length > 0 && paused.length > 0, code);
+    assert.notEqual(playing, paused, code);
+  }
+});
+
+test('playbackLabel follows the language, falling back to English', () => {
+  assert.equal(playbackLabel('vi-VN', false), 'Đang phát');
+  assert.equal(playbackLabel('vi', true), 'Tạm dừng');
+  assert.equal(playbackLabel('xx', true), 'Paused');
 });
 
 test('every label mentions YouTube Music', () => {

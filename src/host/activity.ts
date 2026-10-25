@@ -1,5 +1,5 @@
 import type { SetActivity } from '@xhayper/discord-rpc';
-import { stateLine } from '../shared/display.ts';
+import { playbackIconUrl } from '../shared/display.ts';
 import type { Track } from '../shared/protocol.ts';
 
 const ACTIVITY_TYPE_LISTENING = 2;
@@ -37,13 +37,17 @@ export function buildActivity(track: Track): SetActivity {
     activity.endTimestamp = track.endTimestampMs;
   }
 
-  const state = stateLine(track);
-  if (state) activity.state = fitText(state);
+  if (track.artist) activity.state = fitText(track.artist);
   if (track.artist && track.artistUrl) activity.stateUrl = track.artistUrl;
   if (track.artworkUrl) activity.largeImageKey = track.artworkUrl;
   if (track.artworkUrl && track.imageUrl) activity.largeImageUrl = track.imageUrl;
   // Discord shows this as the hover text of the artwork and, for a Listening activity, also as a third line.
   if (track.artworkUrl && track.imageText) activity.largeImageText = fitText(track.imageText);
+  // The corner icon says whether the track plays or is paused; it sits on the artwork, so it needs one.
+  if (track.artworkUrl) {
+    activity.smallImageKey = playbackIconUrl(track.paused);
+    if (track.playbackText) activity.smallImageText = fitText(track.playbackText);
+  }
   if (track.button) {
     activity.buttons = [{ label: fitButtonLabel(track.button.label), url: track.button.url }];
   }

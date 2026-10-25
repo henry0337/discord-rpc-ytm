@@ -1,5 +1,5 @@
 import { LANGUAGES } from '../shared/i18n.ts';
-import { HEADER_LINE, stateLine } from '../shared/display.ts';
+import { HEADER_LINE, playbackIconUrl } from '../shared/display.ts';
 import type { Track, TrackButton } from '../shared/protocol.ts';
 import { AUTO_LANGUAGE } from '../shared/settings.ts';
 import type { Status } from './status.ts';
@@ -33,6 +33,9 @@ export interface Card {
   artworkUrl: string | null;
   /** Hover text of the artwork. */
   imageText: string | null;
+  /** The small icon at the corner of the artwork, with its hover text. */
+  playbackIcon: string;
+  playbackText: string | null;
   button: TrackButton | null;
   progress: boolean;
   /** Dimmed when Discord is not showing it right now. */
@@ -87,10 +90,12 @@ function cardFor(now: Track, shown: boolean): Card {
   return {
     header: HEADER_LINE,
     title: now.title,
-    artist: stateLine(now),
+    artist: now.artist,
     artistUrl: now.artistUrl,
     artworkUrl: now.artworkUrl,
     imageText: now.imageText,
+    playbackIcon: playbackIconUrl(now.paused),
+    playbackText: now.playbackText,
     button: now.button,
     progress: now.startTimestampMs !== null && now.endTimestampMs !== null,
     dim: !shown,

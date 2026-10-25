@@ -94,6 +94,15 @@ function renderCard(card: Card, note: string, now: Track): HTMLElement[] {
     image.referrerPolicy = 'no-referrer';
     image.addEventListener('error', () => image.remove());
     cover.append(image);
+
+    // Like on Discord, the icon needs the artwork to sit on.
+    const badge = document.createElement('img');
+    badge.className = 'badge';
+    badge.src = card.playbackIcon;
+    badge.alt = '';
+    if (card.playbackText) badge.title = card.playbackText;
+    badge.addEventListener('error', () => badge.remove());
+    cover.append(badge);
   }
 
   const meta = element('div', 'meta');

@@ -40,8 +40,7 @@ Bấm icon extension để mở popup:
 - Thẻ **On Discord (Preview)** vẽ giống activity thật (ảnh bìa, tên bài, tác giả, thanh tiến trình, nút).
   Tên bài dài bị cắt bằng "…"; rê chuột vào để xem đầy đủ.
 - **Button language**: ngôn ngữ nhãn nút (mặc định theo trình duyệt).
-- **When paused**: ẩn khỏi Discord, hoặc giữ lại và ghi "Paused · tên tác giả" (không có thanh tiến trình
-  vì Discord sẽ tiếp tục đếm).
+- **When paused**: ẩn khỏi Discord, hoặc giữ lại với icon Pause (không có thanh tiến trình vì Discord sẽ tiếp tục đếm).
 - **Troubleshooting → Copy diagnostics**: copy trạng thái (phiên bản, trình duyệt, cài đặt, kết nối, bài đang
   phát) để dán vào báo lỗi. Không chứa link.
 
@@ -76,6 +75,10 @@ Cài đặt lưu trong `storage.local` của extension. Logic quyết định po
   và mọi danh sách do YouTube Music tự tạo đều không được tính là playlist. Chỉ biết playlist **đang phát**: bài nằm trong
   playlist của bạn nhưng đang phát từ nơi khác (trang album, tìm kiếm...) thì hiện tên album. Discord dùng cùng `large_text` này làm dòng thứ 3 dưới tên tác giả của activity
   kiểu Listening, nên dòng thứ 3 cũng xuất hiện khi có tên.
+- **Icon nhỏ ở góc dưới phải ảnh bìa:** Play khi đang phát, Pause khi tạm dừng; rê chuột vào để xem chữ "Playing"/"Paused"
+  (theo ngôn ngữ của extension). Đây chỉ là biểu tượng trạng thái: Discord không cho bấm vào nó để điều khiển nhạc.
+  Icon không có ảnh bìa thì không hiện. Hai ảnh nằm ở `assets/` và được Discord tải qua link
+  `raw.githubusercontent.com/.../master/assets/`, nên chỉ hiện sau khi chúng có trên nhánh `master` của repo công khai.
 - Quảng cáo (tài khoản không có Premium) **không** hiện lên Discord.
 - Danh sách tác giả và album lấy từ API nội bộ `youtubei/v1/next` của YouTube Music, gọi từ chính trang
   (`src/extension/page.ts`). API này không công khai và có thể đổi; khi gọi lỗi, extension quay về tên tác giả

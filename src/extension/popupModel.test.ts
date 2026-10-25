@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { buildPopupModel, progressOf } from './popupModel.ts';
 import type { Status } from './status.ts';
 import type { Track } from '../shared/protocol.ts';
+import { playbackIconUrl } from '../shared/display.ts';
 import { DEFAULT_SETTINGS } from '../shared/settings.ts';
 
 const NOW_MS = 1_700_000_000_000;
@@ -14,6 +15,7 @@ const track: Track = {
   imageUrl: null,
   artworkUrl: 'https://img/1',
   imageText: null,
+  playbackText: null,
   button: { label: 'Phát trên YouTube Music (Web)', url: 'https://music.youtube.com/watch?v=abc' },
   startTimestampMs: NOW_MS - 72_000,
   endTimestampMs: NOW_MS - 72_000 + 212_000,
@@ -86,17 +88,19 @@ test('the card mirrors the Discord activity', () => {
   assert.equal(card?.artistUrl, track.artistUrl);
   assert.equal(card?.artworkUrl, 'https://img/1');
   assert.equal(card?.imageText, null);
+  assert.equal(card?.playbackIcon, playbackIconUrl(false));
   assert.deepEqual(card?.button, track.button);
   assert.equal(card?.dim, false);
   assert.equal(card?.progress, true);
 });
 
-test('a paused track shows Paused on the artist line and has no progress bar', () => {
+test('a paused track has no progress bar and wears the pause icon', () => {
   const paused = { ...track, paused: true, startTimestampMs: null, endTimestampMs: null };
   const { card } = buildPopupModel({ ...status, now: paused });
 
-  assert.equal(card?.artist, 'Paused · auritni');
+  assert.equal(card?.artist, 'auritni');
   assert.equal(card?.progress, false);
+  assert.equal(card?.playbackIcon, playbackIconUrl(true));
 });
 
 test('the note explains why the card is dimmed', () => {

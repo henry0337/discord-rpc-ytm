@@ -1,35 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { HEADER_LINE, stateLine } from './display.ts';
-import type { Track } from './protocol.ts';
+import { HEADER_LINE, playbackIconUrl } from './display.ts';
 
-const track: Track = {
-  title: 'Lycoris',
-  artist: 'auritni',
-  artistUrl: null,
-  imageUrl: null,
-  artworkUrl: null,
-  imageText: null,
-  button: null,
-  startTimestampMs: 1000,
-  endTimestampMs: 2000,
-  paused: false,
-};
-
-test('stateLine is the artist while playing', () => {
-  assert.equal(stateLine(track), 'auritni');
-});
-
-test('stateLine prefixes Paused for a paused track', () => {
-  assert.equal(stateLine({ ...track, paused: true }), 'Paused · auritni');
-});
-
-test('stateLine is just Paused when a paused track has no artist', () => {
-  assert.equal(stateLine({ ...track, paused: true, artist: '' }), 'Paused');
-});
-
-test('stateLine is empty for a playing track without an artist', () => {
-  assert.equal(stateLine({ ...track, artist: '' }), '');
+test('the playback icon is the pause icon while paused and the play icon otherwise', () => {
+  assert.match(playbackIconUrl(true), /^https:\/\/.+\/assets\/pause\.png$/);
+  assert.match(playbackIconUrl(false), /^https:\/\/.+\/assets\/play\.png$/);
 });
 
 test('the header line always names the application, as Discord does', () => {
