@@ -68,11 +68,13 @@ Cài đặt lưu trong `storage.local` của extension. Logic quyết định po
 - **Dòng 1:** tên bài. **Dòng 2:** các tác giả nối bằng ", " (không dùng "và"/"&" theo ngôn ngữ giao diện).
 - **Bấm vào dòng tác giả:** mở kênh của tác giả **đầu tiên** trên YouTube Music, nếu tác giả đó có kênh.
   Discord chỉ cho một link cho cả dòng nên không gắn link riêng cho từng tên được.
-- **Bấm vào ảnh bìa:** mở trang album, nếu bài có album.
-- **Rê chuột vào ảnh bìa:** hiện tên album của bài; nếu bài không thuộc album nào thì hiện tên playlist đang phát,
-  chỉ khi đó là playlist do người dùng tạo (ID bắt đầu bằng `PL`); còn lại không hiện gì.
-  Lưu ý: ID không cho biết playlist của ai, nên playlist công khai của người khác cũng được tính. Album, radio, "Nhạc đã thích" và
-  mọi danh sách do YouTube Music tự tạo đều bị loại. Discord dùng cùng `large_text` này làm dòng thứ 3 dưới tên tác giả của activity
+- **Bấm vào ảnh bìa:** mở playlist đang phát nếu tên playlist đang được hiện (xem bên dưới), không thì mở trang album,
+  nếu bài có album. Playlist riêng tư chỉ chính bạn mở được.
+- **Rê chuột vào ảnh bìa:** ưu tiên tên playlist đang phát, chỉ khi đó là playlist do người dùng tạo (ID bắt đầu bằng
+  `PL`); không có thì hiện tên album của bài; không có nữa thì không hiện gì.
+  Lưu ý: ID không cho biết playlist của ai, nên playlist công khai của người khác cũng được tính. Radio, "Nhạc đã thích"
+  và mọi danh sách do YouTube Music tự tạo đều không được tính là playlist. Chỉ biết playlist **đang phát**: bài nằm trong
+  playlist của bạn nhưng đang phát từ nơi khác (trang album, tìm kiếm...) thì hiện tên album. Discord dùng cùng `large_text` này làm dòng thứ 3 dưới tên tác giả của activity
   kiểu Listening, nên dòng thứ 3 cũng xuất hiện khi có tên.
 - Quảng cáo (tài khoản không có Premium) **không** hiện lên Discord.
 - Danh sách tác giả và album lấy từ API nội bộ `youtubei/v1/next` của YouTube Music, gọi từ chính trang

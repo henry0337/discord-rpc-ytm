@@ -32,7 +32,7 @@ function sameDisplay(a: Track, b: Track): boolean {
     a.title === b.title &&
     a.artist === b.artist &&
     a.artistUrl === b.artistUrl &&
-    a.albumUrl === b.albumUrl &&
+    a.imageUrl === b.imageUrl &&
     a.artworkUrl === b.artworkUrl &&
     a.imageText === b.imageText &&
     a.button?.label === b.button?.label &&

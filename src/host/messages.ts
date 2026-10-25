@@ -44,14 +44,14 @@ function parseTrack(value: unknown): Track | null {
   if (value.paused !== undefined && typeof value.paused !== 'boolean') return null;
   const button = parseButton(value.button);
   const artistUrl = parseLink(value.artistUrl);
-  const albumUrl = parseLink(value.albumUrl);
+  const imageUrl = parseLink(value.imageUrl);
   const imageText = parseText(value.imageText);
   const startTimestampMs = parseTimestamp(value.startTimestampMs);
   const endTimestampMs = parseTimestamp(value.endTimestampMs);
   if (
     button === INVALID ||
     artistUrl === INVALID ||
-    albumUrl === INVALID ||
+    imageUrl === INVALID ||
     imageText === INVALID ||
     startTimestampMs === INVALID ||
     endTimestampMs === INVALID
@@ -63,7 +63,7 @@ function parseTrack(value: unknown): Track | null {
     title,
     artist,
     artistUrl,
-    albumUrl,
+    imageUrl,
     artworkUrl,
     imageText,
     button,

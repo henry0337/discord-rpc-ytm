@@ -25,6 +25,7 @@ function keyOf(state: PlayerState | null): string {
     state.artistChannelId,
     state.albumId,
     state.collectionName,
+    state.playlistId,
     state.artworkUrl,
     state.videoId,
     state.playing,

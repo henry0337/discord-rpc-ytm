@@ -7,7 +7,7 @@ const track: Track = {
   title: 'Lycoris',
   artist: 'auritni',
   artistUrl: null,
-  albumUrl: null,
+  imageUrl: null,
   artworkUrl: null,
   imageText: null,
   button: null,

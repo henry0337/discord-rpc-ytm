@@ -10,7 +10,7 @@ function track(overrides: Partial<Track> = {}): Track {
     title: 'Song',
     artist: 'Artist',
     artistUrl: null,
-    albumUrl: null,
+    imageUrl: null,
     artworkUrl: null,
     imageText: null,
     button: null,
@@ -141,7 +141,7 @@ test('applies an update when the artist or album link appears after the track wa
   controller.setTrack(
     track({
       artistUrl: 'https://music.youtube.com/channel/UCvG6SZfCwSCCjifUpGHw1EA',
-      albumUrl: 'https://music.youtube.com/browse/MPREb_nWA3z8K9P9T',
+      imageUrl: 'https://music.youtube.com/browse/MPREb_nWA3z8K9P9T',
     }),
   );
   await Promise.resolve();

@@ -7,7 +7,7 @@ const track: Track = {
   title: 'Miss You (Sped Up)',
   artist: 'TRVNSPORTER, Narvent, SKVLENT',
   artistUrl: 'https://music.youtube.com/channel/UCvG6SZfCwSCCjifUpGHw1EA',
-  albumUrl: 'https://music.youtube.com/browse/MPREb_nWA3z8K9P9T',
+  imageUrl: 'https://music.youtube.com/browse/MPREb_nWA3z8K9P9T',
   artworkUrl: 'https://yt3.googleusercontent.com/abc=w544-h544-l90-rj',
   imageText: null,
   button: { label: 'Phát trên YouTube Music (Web)', url: 'https://music.youtube.com/watch?v=abc' },
@@ -56,7 +56,7 @@ test('buildActivity leaves the artist line unlinked when the artist has no chann
 });
 
 test('buildActivity leaves the artwork unlinked when there is no album', () => {
-  const activity = buildActivity({ ...track, albumUrl: null });
+  const activity = buildActivity({ ...track, imageUrl: null });
 
   assert.equal('largeImageUrl' in activity, false);
 });

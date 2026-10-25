@@ -41,7 +41,7 @@ export function buildActivity(track: Track): SetActivity {
   if (state) activity.state = fitText(state);
   if (track.artist && track.artistUrl) activity.stateUrl = track.artistUrl;
   if (track.artworkUrl) activity.largeImageKey = track.artworkUrl;
-  if (track.artworkUrl && track.albumUrl) activity.largeImageUrl = track.albumUrl;
+  if (track.artworkUrl && track.imageUrl) activity.largeImageUrl = track.imageUrl;
   // Discord shows this as the hover text of the artwork and, for a Listening activity, also as a third line.
   if (track.artworkUrl && track.imageText) activity.largeImageText = fitText(track.imageText);
   if (track.button) {

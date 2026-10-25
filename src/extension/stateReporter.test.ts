@@ -14,6 +14,7 @@ function playing(overrides: Partial<PlayerState> = {}, now = T0, position = 10):
     titleWithoutCredit: null,
     credits: [],
     collectionName: null,
+    playlistId: null,
     artworkUrl: null,
     videoId: null,
     startTimestampMs: now - position * 1000,

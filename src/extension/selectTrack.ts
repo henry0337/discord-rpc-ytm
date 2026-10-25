@@ -3,7 +3,7 @@ import type { Settings } from '../shared/settings.ts';
 import { originalTitle } from './originalTitle.ts';
 import { buildPlayButton } from './playButton.ts';
 import type { PlayerState } from './playerState.ts';
-import { albumUrl, channelUrl } from './trackDetails.ts';
+import { albumUrl, channelUrl, playlistUrl } from './trackDetails.ts';
 
 export interface TabEntry {
   state: PlayerState;
@@ -45,6 +45,7 @@ export function selectTrack(
     artistChannelId,
     albumId,
     collectionName,
+    playlistId,
     artworkUrl,
     videoId,
     startTimestampMs,
@@ -56,7 +57,8 @@ export function selectTrack(
     title: originalTitle(titleWithoutCredit ?? title),
     artist: [artist, ...credits].filter(Boolean).join(', '),
     artistUrl: artistChannelId ? channelUrl(artistChannelId) : null,
-    albumUrl: albumId ? albumUrl(albumId) : null,
+    // The link follows the name shown on hover: the playlist being played from, else the album.
+    imageUrl: playlistId ? playlistUrl(playlistId) : albumId ? albumUrl(albumId) : null,
     artworkUrl,
     imageText: collectionName,
     button: buildPlayButton(videoId, locale),

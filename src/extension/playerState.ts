@@ -34,8 +34,10 @@ export interface PlayerState {
   /** Channel of the first artist, when it has one. */
   artistChannelId: string | null;
   albumId: string | null;
-  /** The album's name, else the name of the playlist being played from, else null. */
+  /** The name of the playlist being played from if a person made it, else the album's name, else null. */
   collectionName: string | null;
+  /** ID of the playlist when its name is the collection name, else null. */
+  playlistId: string | null;
   artworkUrl: string | null;
   videoId: string | null;
   /** Epoch ms at which the track (virtually) started, i.e. now - position. */
@@ -93,7 +95,8 @@ export function toPlayerState(snapshot: PlayerSnapshot, now: number): PlayerStat
     artistChannelId: artists[0]?.channelId ?? null,
     albumId: videoId !== null ? (snapshot.details?.albumId ?? null) : null,
     collectionName:
-      videoId !== null ? (snapshot.details?.albumName ?? snapshot.details?.playlistName ?? null) : null,
+      videoId !== null ? (snapshot.details?.playlistName ?? snapshot.details?.albumName ?? null) : null,
+    playlistId: videoId !== null && snapshot.details?.playlistName ? (snapshot.details.playlistId ?? null) : null,
     artworkUrl: largestArtwork(metadata),
     videoId,
     startTimestampMs,

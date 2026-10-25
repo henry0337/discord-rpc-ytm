@@ -13,7 +13,7 @@ const status: Status = {
     title: 'Lycoris',
     artist: 'auritni',
     artistUrl: 'https://music.youtube.com/channel/UCvG6SZfCwSCCjifUpGHw1EA',
-    albumUrl: null,
+    imageUrl: null,
     artworkUrl: 'https://img/1',
     imageText: null,
     button: { label: 'Play', url: 'https://music.youtube.com/watch?v=abc' },
@@ -54,7 +54,7 @@ test('formatDiagnostics describes what is playing and which links exist, not the
   assert.match(text, /Now playing: Lycoris — auritni \(playing\)/);
   assert.match(text, /Shown on Discord: yes/);
   assert.match(text, /Artist link: yes/);
-  assert.match(text, /Album link: no/);
+  assert.match(text, /Artwork link: no/);
   assert.match(text, /Play button: yes/);
   assert.ok(!text.includes('UCvG6SZfCwSCCjifUpGHw1EA'));
 });

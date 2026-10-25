@@ -36,7 +36,7 @@ export function formatDiagnostics(status: Status, env: DiagnosticsEnvironment): 
   if (now) {
     lines.push(
       `Artist link: ${yesNo(now.artistUrl !== null)}`,
-      `Album link: ${yesNo(now.albumUrl !== null)}`,
+      `Artwork link: ${yesNo(now.imageUrl !== null)}`,
       `Play button: ${yesNo(now.button !== null)}`,
     );
   }

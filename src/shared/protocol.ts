@@ -18,10 +18,10 @@ export interface Track {
   artist: string;
   /** Where clicking the artist line leads: the first artist's channel, when it has one. */
   artistUrl: string | null;
-  /** Where clicking the artwork leads: the album page, when the track has an album. */
-  albumUrl: string | null;
+  /** Where clicking the artwork leads: the playlist whose name is shown, else the album page, when there is one. */
+  imageUrl: string | null;
   artworkUrl: string | null;
-  /** Shown when hovering the artwork: the album's name, else the playlist being played from. */
+  /** Shown when hovering the artwork: the playlist being played from if a person made it, else the album's name. */
   imageText: string | null;
   button: TrackButton | null;
   /** Epoch ms at which the track (virtually) started, i.e. now - position. Null: no progress bar. */

@@ -18,6 +18,7 @@ const details: TrackDetails = {
   albumId: ALBUM,
   albumName: 'Miss You',
   playlistName: null,
+  playlistId: null,
   credit: null,
 };
 
@@ -146,13 +147,22 @@ test('toPlayerState links the first artist only, and only when that artist has a
   assert.equal(toPlayerState(snapshot({ details: unlinkedFirst }), NOW)?.artistChannelId, null);
 });
 
-test('toPlayerState names the album as the collection, before any playlist', () => {
-  const both = { ...details, albumName: 'Miss You', playlistName: 'Late night' };
+test('toPlayerState names the playlist as the collection, before the album, and keeps its ID for the link', () => {
+  const both = { ...details, albumName: 'Miss You', playlistName: 'Late night', playlistId: 'PLabc_123' };
+  const state = toPlayerState(snapshot({ details: both }), NOW);
 
-  assert.equal(toPlayerState(snapshot({ details: both }), NOW)?.collectionName, 'Miss You');
+  assert.equal(state?.collectionName, 'Late night');
+  assert.equal(state?.playlistId, 'PLabc_123');
 });
 
-test('toPlayerState falls back to the playlist when the track has no album', () => {
+test('toPlayerState falls back to the album when the track is not played from a playlist', () => {
+  const albumOnly = { ...details, albumName: 'Miss You', playlistName: null };
+
+  assert.equal(toPlayerState(snapshot({ details: albumOnly }), NOW)?.collectionName, 'Miss You');
+  assert.equal(toPlayerState(snapshot({ details: albumOnly }), NOW)?.playlistId, null);
+});
+
+test('toPlayerState uses the playlist alone when the track has no album', () => {
   const playlistOnly = { ...details, albumName: null, playlistName: 'Late night' };
 
   assert.equal(toPlayerState(snapshot({ details: playlistOnly }), NOW)?.collectionName, 'Late night');

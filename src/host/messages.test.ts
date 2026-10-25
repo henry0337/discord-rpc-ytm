@@ -6,7 +6,7 @@ const validTrack = {
   title: 'Song',
   artist: 'Artist',
   artistUrl: 'https://music.youtube.com/channel/UCvG6SZfCwSCCjifUpGHw1EA',
-  albumUrl: 'https://music.youtube.com/browse/MPREb_nWA3z8K9P9T',
+  imageUrl: 'https://music.youtube.com/browse/MPREb_nWA3z8K9P9T',
   artworkUrl: 'https://img/1',
   imageText: null,
   button: { label: 'Play on YouTube Music (Web)', url: 'https://music.youtube.com/watch?v=abc' },
@@ -45,18 +45,18 @@ test('parseExtensionMessage accepts a track without artwork', () => {
 });
 
 test('parseExtensionMessage accepts a track without artist or album links', () => {
-  const message = { type: 'setTrack', track: { ...validTrack, artistUrl: null, albumUrl: null } };
+  const message = { type: 'setTrack', track: { ...validTrack, artistUrl: null, imageUrl: null } };
 
   assert.deepEqual(parseExtensionMessage(message), message);
 });
 
 test('parseExtensionMessage treats missing artist and album links as no links', () => {
-  const { artistUrl: _a, albumUrl: _b, ...withoutLinks } = validTrack;
+  const { artistUrl: _a, imageUrl: _b, ...withoutLinks } = validTrack;
   const parsed = parseExtensionMessage({ type: 'setTrack', track: withoutLinks });
 
   assert.deepEqual(parsed, {
     type: 'setTrack',
-    track: { ...withoutLinks, artistUrl: null, albumUrl: null },
+    track: { ...withoutLinks, artistUrl: null, imageUrl: null },
   });
 });
 
@@ -64,7 +64,7 @@ test('parseExtensionMessage rejects artist or album links that are not https lin
   const bad = [5, 'javascript:alert(1)', 'http://music.youtube.com/channel/x', ''];
 
   for (const value of bad) {
-    for (const field of ['artistUrl', 'albumUrl']) {
+    for (const field of ['artistUrl', 'imageUrl']) {
       const message = { type: 'setTrack', track: { ...validTrack, [field]: value } };
       assert.equal(parseExtensionMessage(message), null, `${field}=${JSON.stringify(value)}`);
     }

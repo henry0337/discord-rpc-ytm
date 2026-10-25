@@ -11,7 +11,7 @@ const track: Track = {
   title: 'Lycoris',
   artist: 'auritni',
   artistUrl: 'https://music.youtube.com/channel/UCvG6SZfCwSCCjifUpGHw1EA',
-  albumUrl: null,
+  imageUrl: null,
   artworkUrl: 'https://img/1',
   imageText: null,
   button: { label: 'Phát trên YouTube Music (Web)', url: 'https://music.youtube.com/watch?v=abc' },

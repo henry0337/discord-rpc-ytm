@@ -17,6 +17,7 @@ function state(title: string, overrides: Partial<PlayerState> = {}): PlayerState
     titleWithoutCredit: null,
     credits: [],
     collectionName: null,
+    playlistId: null,
     artworkUrl: null,
     videoId: null,
     startTimestampMs: 1000,
@@ -41,7 +42,7 @@ test('selectTrack returns the track of a playing tab without the playing flag or
     title: 'A',
     artist: 'Artist',
     artistUrl: null,
-    albumUrl: null,
+    imageUrl: null,
     artworkUrl: null,
     imageText: null,
     button: null,
@@ -62,7 +63,17 @@ test('selectTrack turns the artist channel and the album into links', () => {
   const track = selectTrack(entries, settings(), 'en');
 
   assert.equal(track?.artistUrl, `https://music.youtube.com/channel/${CHANNEL}`);
-  assert.equal(track?.albumUrl, `https://music.youtube.com/browse/${ALBUM}`);
+  assert.equal(track?.imageUrl, `https://music.youtube.com/browse/${ALBUM}`);
+});
+
+test('selectTrack makes the artwork open the playlist being played from, rather than the album', () => {
+  const entries = [entry('A', 1, { albumId: ALBUM, collectionName: 'Hopeless', playlistId: 'PLabc_123' })];
+
+  assert.equal(selectTrack(entries, settings(), 'en')?.imageUrl, 'https://music.youtube.com/playlist?list=PLabc_123');
+});
+
+test('selectTrack leaves the artwork without a link when there is neither a playlist nor an album', () => {
+  assert.equal(selectTrack([entry('A', 1)], settings(), 'en')?.imageUrl, null);
 });
 
 test('selectTrack adds a play button localised to the given language when the video ID is known', () => {

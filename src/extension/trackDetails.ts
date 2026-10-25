@@ -24,6 +24,8 @@ export interface TrackDetails {
   albumName: string | null;
   /** The playlist being played from, when a person made it (not an album or a generated radio). */
   playlistName: string | null;
+  /** ID of that playlist; set only together with its name. */
+  playlistId: string | null;
   /** Who YouTube Music says is featured, when the title says so in a form that can be read. */
   credit: Credit | null;
 }
@@ -41,6 +43,10 @@ export function channelUrl(channelId: string): string {
 
 export function albumUrl(albumId: string): string {
   return `https://music.youtube.com/browse/${albumId}`;
+}
+
+export function playlistUrl(playlistId: string): string {
+  return `https://music.youtube.com/playlist?list=${playlistId}`;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -140,6 +146,8 @@ export function parseTrackDetails(
     (run) => run.pageType === ALBUM_PAGE_TYPE && run.browseId !== null && ALBUM_ID_PATTERN.test(run.browseId),
   );
 
+  const playlistName =
+    playlistId !== null && USER_PLAYLIST_ID_PATTERN.test(playlistId) ? queueName(response) : null;
   const title = parseTitle(renderer?.title);
   return {
     videoId,
@@ -147,7 +155,8 @@ export function parseTrackDetails(
     artists,
     albumId: albumRun?.browseId ?? null,
     albumName: albumRun ? cleanName(albumRun.text) : null,
-    playlistName: playlistId !== null && USER_PLAYLIST_ID_PATTERN.test(playlistId) ? queueName(response) : null,
+    playlistName,
+    playlistId: playlistName !== null ? playlistId : null,
     credit: title === null ? null : parseCredit(title),
   };
 }
@@ -205,6 +214,10 @@ export function parseDetailsAttribute(raw: string | null): TrackDetails | null {
     albumId,
     albumName: cleanName(value.albumName),
     playlistName: cleanName(value.playlistName),
+    playlistId:
+      typeof value.playlistId === 'string' && USER_PLAYLIST_ID_PATTERN.test(value.playlistId)
+        ? value.playlistId
+        : null,
     credit: sanitizeCredit(value.credit),
   };
 }

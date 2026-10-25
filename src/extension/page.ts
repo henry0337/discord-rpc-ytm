@@ -143,7 +143,7 @@ function tick(): void {
       cache.get(key) ??
       [...cache.values()].findLast((known) => known.videoId === videoId) ??
       (failedAt.has(key)
-        ? { videoId, title: null, artists: [], albumId: null, albumName: null, playlistName: null, credit: null }
+        ? { videoId, title: null, artists: [], albumId: null, albumName: null, playlistName: null, playlistId: null, credit: null }
         : undefined);
     setAttribute(DETAILS_ATTRIBUTE, details ? JSON.stringify(details) : null);
   } catch {
