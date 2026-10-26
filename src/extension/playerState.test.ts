@@ -19,6 +19,7 @@ const details: TrackDetails = {
   albumName: 'Miss You',
   playlistName: null,
   playlistId: null,
+  durationSeconds: null,
   credit: null,
 };
 
@@ -109,6 +110,21 @@ test('toPlayerState derives start and end timestamps from the playback position'
   const state = toPlayerState(snapshot(), NOW);
 
   assert.equal(state?.startTimestampMs, NOW - 10_000);
+  assert.equal(state?.endTimestampMs, NOW - 10_000 + 176_000);
+});
+
+test('toPlayerState ends the track where the queue says it ends, not where the player has loaded up to', () => {
+  const loading = snapshot({ video: { currentTime: 20, duration: 49, paused: false } });
+  const listed = { ...details, durationSeconds: 175 };
+  const state = toPlayerState({ ...loading, details: listed }, NOW);
+
+  assert.equal(state?.endTimestampMs, NOW - 20_000 + 175_000);
+  assert.equal(toPlayerState(loading, NOW)?.endTimestampMs, NOW - 20_000 + 49_000, 'without it, the player decides');
+});
+
+test('toPlayerState ignores the listed length when there is no video ID to tie it to', () => {
+  const state = toPlayerState(snapshot({ videoId: null, details: { ...details, durationSeconds: 175 } }), NOW);
+
   assert.equal(state?.endTimestampMs, NOW - 10_000 + 176_000);
 });
 

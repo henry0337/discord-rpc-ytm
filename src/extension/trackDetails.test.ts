@@ -84,6 +84,28 @@ test('parseTrackDetails finds the album', () => {
   assert.equal(parseTrackDetails(response('vid', multiArtistRuns), 'vid')?.albumId, ALBUM);
 });
 
+const withLength = (length: unknown) => ({
+  contents: {
+    queue: [
+      { playlistPanelVideoRenderer: { videoId: 'vid', longBylineText: { runs: [] }, lengthText: length } },
+    ],
+  },
+});
+
+test('parseTrackDetails reads the length of the track as the queue words it', () => {
+  const lengths: [string, number][] = [['2:55', 175], ['0:49', 49], ['12:05', 725], ['1:02:03', 3723]];
+
+  for (const [text, seconds] of lengths) {
+    assert.equal(parseTrackDetails(withLength({ runs: [{ text }] }), 'vid')?.durationSeconds, seconds, text);
+  }
+});
+
+test('parseTrackDetails has no length when the queue gives none, or one it cannot read', () => {
+  for (const length of [undefined, null, {}, { runs: [] }, { runs: [{ text: '' }] }, { runs: [{ text: 'LIVE' }] }, { runs: [{ text: '0:00' }] }]) {
+    assert.equal(parseTrackDetails(withLength(length), 'vid')?.durationSeconds, null, JSON.stringify(length));
+  }
+});
+
 test('parseTrackDetails reads the name of the album', () => {
   assert.equal(parseTrackDetails(response('vid', multiArtistRuns), 'vid')?.albumName, 'Miss You');
 });
@@ -234,6 +256,7 @@ test('parseDetailsAttribute round-trips well-formed details', () => {
     albumName: 'Miss You',
     playlistName: 'Late night',
     playlistId: 'PLabc_123',
+    durationSeconds: 175,
     credit: { baseTitle: 'ピュア - Pure', names: ['Eriko Hashimoto', 'Someone'] },
   };
 
@@ -263,8 +286,18 @@ test('parseDetailsAttribute drops IDs that do not look like channel or album IDs
     albumName: null,
     playlistName: null,
     playlistId: null,
+    durationSeconds: null,
     credit: null,
   });
+});
+
+test('parseDetailsAttribute only keeps a length that is a positive number', () => {
+  const base = { videoId: 'vid', title: null, artists: [], albumId: null };
+
+  for (const bad of [0, -5, '175', null, {}]) {
+    assert.equal(parseDetailsAttribute(JSON.stringify({ ...base, durationSeconds: bad }))?.durationSeconds, null, String(bad));
+  }
+  assert.equal(parseDetailsAttribute(JSON.stringify({ ...base, durationSeconds: 175 }))?.durationSeconds, 175);
 });
 
 test('parseDetailsAttribute only keeps a playlist ID that looks like a playlist a person made', () => {

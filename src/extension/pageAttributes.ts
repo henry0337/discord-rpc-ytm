@@ -7,3 +7,5 @@ export const VIDEO_ID_ATTRIBUTE = 'data-ytm-rpc-video-id';
 export const AD_ATTRIBUTE = 'data-ytm-rpc-ad';
 /** JSON of the TrackDetails of the current video, once fetched. */
 export const DETAILS_ATTRIBUTE = 'data-ytm-rpc-details';
+/** JSON `[currentTime, duration, readAt]` from the player API: where the player is within the current track. */
+export const POSITION_ATTRIBUTE = 'data-ytm-rpc-position';

@@ -77,8 +77,12 @@ export function toPlayerState(snapshot: PlayerSnapshot, now: number): PlayerStat
   const { metadata, video, videoId } = snapshot;
   if (snapshot.adShowing) return null;
   if (!metadata || !metadata.title) return null;
-  if (!video || !Number.isFinite(video.duration) || video.duration <= 0) return null;
+  if (!video) return null;
   if (videoId !== null && snapshot.details?.videoId !== videoId) return null;
+
+  // The length the queue lists is final; the player's own grows while the track is still loading.
+  const duration = (videoId !== null ? snapshot.details?.durationSeconds : null) ?? video.duration;
+  if (!Number.isFinite(duration) || duration <= 0) return null;
 
   const artists = videoId !== null ? (snapshot.details?.artists ?? []) : [];
   const startTimestampMs = now - Math.round(video.currentTime * 1000);
@@ -100,7 +104,7 @@ export function toPlayerState(snapshot: PlayerSnapshot, now: number): PlayerStat
     artworkUrl: largestArtwork(metadata),
     videoId,
     startTimestampMs,
-    endTimestampMs: startTimestampMs + Math.round(video.duration * 1000),
+    endTimestampMs: startTimestampMs + Math.round(duration * 1000),
     playing: !video.paused,
   };
 }

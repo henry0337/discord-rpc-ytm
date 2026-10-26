@@ -1,5 +1,5 @@
 import { mayCarryCredit } from './credit.ts';
-import { AD_ATTRIBUTE, DETAILS_ATTRIBUTE, VIDEO_ID_ATTRIBUTE } from './pageAttributes.ts';
+import { AD_ATTRIBUTE, DETAILS_ATTRIBUTE, POSITION_ATTRIBUTE, VIDEO_ID_ATTRIBUTE } from './pageAttributes.ts';
 import { parseTrackDetails, type TrackDetails } from './trackDetails.ts';
 
 // Runs in the page's own JavaScript world (manifest `world: "MAIN"`): the player API and the
@@ -9,6 +9,8 @@ import { parseTrackDetails, type TrackDetails } from './trackDetails.ts';
 interface PlayerApi {
   getVideoData?: () => { video_id?: string; list?: string } | undefined;
   getPlaylistId?: () => string | null | undefined;
+  getCurrentTime?: () => number;
+  getDuration?: () => number;
   classList: DOMTokenList;
 }
 
@@ -45,6 +47,18 @@ function readPlaylistId(): string | null {
   const id =
     api?.getPlaylistId?.() ?? api?.getVideoData?.()?.list ?? new URL(location.href).searchParams.get('list');
   return id ? id : null;
+}
+
+/**
+ * Where the player is within the current track. The <video> element would do for one track, but
+ * YouTube Music keeps it running across consecutive tracks, so its time and length add up.
+ */
+function readPosition(): string | null {
+  const api = player();
+  const currentTime = api?.getCurrentTime?.();
+  const duration = api?.getDuration?.();
+  if (typeof currentTime !== 'number' || typeof duration !== 'number') return null;
+  return JSON.stringify([currentTime, duration, Date.now()]);
 }
 
 function setAttribute(name: string, value: string | null): void {
@@ -127,6 +141,7 @@ function tick(): void {
     const videoId = readVideoId();
     setAttribute(VIDEO_ID_ATTRIBUTE, videoId);
     setAttribute(AD_ATTRIBUTE, player()?.classList.contains('ad-showing') ? '1' : null);
+    setAttribute(POSITION_ATTRIBUTE, readPosition());
 
     if (videoId === null) {
       setAttribute(DETAILS_ATTRIBUTE, null);
@@ -143,7 +158,7 @@ function tick(): void {
       cache.get(key) ??
       [...cache.values()].findLast((known) => known.videoId === videoId) ??
       (failedAt.has(key)
-        ? { videoId, title: null, artists: [], albumId: null, albumName: null, playlistName: null, playlistId: null, credit: null }
+        ? { videoId, title: null, artists: [], albumId: null, albumName: null, playlistName: null, playlistId: null, durationSeconds: null, credit: null }
         : undefined);
     setAttribute(DETAILS_ATTRIBUTE, details ? JSON.stringify(details) : null);
   } catch {

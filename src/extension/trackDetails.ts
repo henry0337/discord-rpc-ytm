@@ -26,6 +26,11 @@ export interface TrackDetails {
   playlistName: string | null;
   /** ID of that playlist; set only together with its name. */
   playlistId: string | null;
+  /**
+   * Length of the track in seconds, as the queue lists it. The player cannot be asked: while a track
+   * is still loading, its duration is only what has been loaded so far, and it keeps growing.
+   */
+  durationSeconds: number | null;
   /** Who YouTube Music says is featured, when the title says so in a form that can be read. */
   credit: Credit | null;
 }
@@ -83,6 +88,16 @@ function parseTitle(title: unknown): string | null {
     .join('')
     .trim();
   return text === '' ? null : text;
+}
+
+/** "3:34" or "1:02:03", as the queue words a length; null for anything else. */
+function parseLength(length: unknown): number | null {
+  const text = parseTitle(length);
+  const match = text === null ? null : /^(?:(\d{1,2}):)?(\d{1,2}):(\d{2})$/.exec(text);
+  if (!match) return null;
+
+  const seconds = Number(match[1] ?? 0) * 3600 + Number(match[2]) * 60 + Number(match[3]);
+  return seconds > 0 ? seconds : null;
 }
 
 /** The queue header reads "Playing from" over the name of the playlist or album being played. */
@@ -157,6 +172,7 @@ export function parseTrackDetails(
     albumName: albumRun ? cleanName(albumRun.text) : null,
     playlistName,
     playlistId: playlistName !== null ? playlistId : null,
+    durationSeconds: parseLength(renderer?.lengthText),
     credit: title === null ? null : parseCredit(title),
   };
 }
@@ -217,6 +233,10 @@ export function parseDetailsAttribute(raw: string | null): TrackDetails | null {
     playlistId:
       typeof value.playlistId === 'string' && USER_PLAYLIST_ID_PATTERN.test(value.playlistId)
         ? value.playlistId
+        : null,
+    durationSeconds:
+      typeof value.durationSeconds === 'number' && Number.isFinite(value.durationSeconds) && value.durationSeconds > 0
+        ? value.durationSeconds
         : null,
     credit: sanitizeCredit(value.credit),
   };

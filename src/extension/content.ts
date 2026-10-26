@@ -1,6 +1,7 @@
 import { ext } from './api.ts';
 import { toPlayerState, type PlayerSnapshot } from './playerState.ts';
-import { AD_ATTRIBUTE, DETAILS_ATTRIBUTE, VIDEO_ID_ATTRIBUTE } from './pageAttributes.ts';
+import { AD_ATTRIBUTE, DETAILS_ATTRIBUTE, POSITION_ATTRIBUTE, VIDEO_ID_ATTRIBUTE } from './pageAttributes.ts';
+import { parsePlaybackPosition } from './playbackPosition.ts';
 import { StateReporter, type StateMessage } from './stateReporter.ts';
 import { parseDetailsAttribute } from './trackDetails.ts';
 
@@ -22,9 +23,12 @@ function takeSnapshot(): PlayerSnapshot {
       artist: metadata.artist,
       artwork: metadata.artwork.map((image) => ({ src: image.src, sizes: image.sizes ?? '' })),
     },
+    // The player API knows the position within the track; the element is only the fallback.
     video: video && {
-      currentTime: video.currentTime,
-      duration: video.duration,
+      ...(parsePlaybackPosition(root.getAttribute(POSITION_ATTRIBUTE), Date.now(), !video.paused) ?? {
+        currentTime: video.currentTime,
+        duration: video.duration,
+      }),
       paused: video.paused,
     },
     videoId: root.getAttribute(VIDEO_ID_ATTRIBUTE),
