@@ -18,7 +18,6 @@ const master = byId<HTMLButtonElement>('master');
 const masterText = byId('masterText');
 const langNote = byId('langNote');
 const langSelect = byId<HTMLSelectElement>('lang');
-const pausedSelect = byId<HTMLSelectElement>('paused');
 const copyDiagnostics = byId<HTMLButtonElement>('copyDiag');
 
 let latest: Status | undefined;
@@ -174,7 +173,6 @@ function renderSettings(settings: Settings, languageNote: string): void {
   langNote.textContent = languageNote;
   // Leave a dropdown alone while the user has it open.
   if (!isEditing(langSelect)) langSelect.value = settings.language;
-  if (!isEditing(pausedSelect)) pausedSelect.value = settings.whenPaused;
 }
 
 function render(status: Status): void {
@@ -222,7 +220,6 @@ for (const { code, name } of LANGUAGES) {
 
 master.addEventListener('click', () => latest && change({ enabled: !latest.settings.enabled }));
 langSelect.addEventListener('change', () => change({ language: langSelect.value }));
-pausedSelect.addEventListener('change', () => change({ whenPaused: pausedSelect.value as Settings['whenPaused'] }));
   copyDiagnostics.addEventListener('click', () => {
   if (!latest) return;
   const text = formatDiagnostics(latest, {

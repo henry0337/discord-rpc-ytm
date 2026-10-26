@@ -104,7 +104,6 @@ function cardFor(now: Track, shown: boolean): Card {
 
 function noteFor(status: Status, now: Track): string {
   if (!status.settings.enabled) return 'Off. Nothing is shown on Discord.';
-  if (!status.shown) return 'Paused. Hidden from Discord until you press play.';
   return now.button
     ? 'This is what others see. Discord does not show you your own button.'
     : 'This is what others see.';

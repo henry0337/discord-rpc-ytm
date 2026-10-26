@@ -10,7 +10,6 @@ test('the defaults match the previous behaviour of the extension', () => {
   assert.deepEqual(DEFAULT_SETTINGS, {
     enabled: true,
     language: 'auto',
-    whenPaused: 'hide',
   });
 });
 
@@ -18,7 +17,6 @@ test('parseSettings keeps valid stored values', () => {
   const stored = {
     enabled: false,
     language: 'vi',
-    whenPaused: 'show',
   };
 
   assert.deepEqual(parseSettings(stored), stored);
@@ -28,7 +26,6 @@ test('parseSettings falls back to the default for each invalid value separately'
   const settings = parseSettings({
     enabled: 'yes',
     language: 'klingon',
-    whenPaused: 'later',
   });
 
   assert.deepEqual(settings, DEFAULT_SETTINGS);
@@ -36,7 +33,7 @@ test('parseSettings falls back to the default for each invalid value separately'
 });
 
 test('parseSettings ignores keys it does not know, such as settings that no longer exist', () => {
-  assert.deepEqual(parseSettings({ somethingElse: 1, statusText: 'title', showButton: false }), DEFAULT_SETTINGS);
+  assert.deepEqual(parseSettings({ somethingElse: 1, statusText: 'title', showButton: false, whenPaused: 'show' }), DEFAULT_SETTINGS);
 });
 
 test('SETTING_KEYS lists every setting so storage can be read in one call', () => {
@@ -46,12 +43,12 @@ test('SETTING_KEYS lists every setting so storage can be read in one call', () =
 test('validatePatch keeps only known keys with valid values', () => {
   const patch = validatePatch({
     enabled: false,
+    language: 'vi',
     whenPaused: 'show',
-    language: 'klingon',
     unknown: true,
   });
 
-  assert.deepEqual(patch, { enabled: false, whenPaused: 'show' });
+  assert.deepEqual(patch, { enabled: false, language: 'vi' });
 });
 
 test('validatePatch returns an empty patch for input that is not an object', () => {

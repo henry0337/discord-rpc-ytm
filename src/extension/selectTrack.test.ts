@@ -55,7 +55,7 @@ test('selectTrack returns the track of a playing tab without the playing flag or
 
 test('selectTrack words the playback icon in the language of the user, for playing and paused', () => {
   const playing = selectTrack([entry('A', 1)], settings(), 'vi');
-  const paused = selectTrack([entry('A', 1, { playing: false })], settings({ whenPaused: 'show' }), 'vi');
+  const paused = selectTrack([entry('A', 1, { playing: false })], settings(), 'vi');
 
   assert.equal(playing?.playbackText, 'Đang phát');
   assert.equal(paused?.playbackText, 'Tạm dừng');
@@ -95,7 +95,7 @@ test('selectTrack adds a play button localised to the given language when the vi
 });
 
 test('selectTrack leaves the progress bar out for a paused track', () => {
-  const track = selectTrack([entry('A', 1, { playing: false })], settings({ whenPaused: 'show' }), 'en');
+  const track = selectTrack([entry('A', 1, { playing: false })], settings(), 'en');
 
   assert.equal(track?.startTimestampMs, null);
   assert.equal(track?.endTimestampMs, null);
@@ -154,16 +154,9 @@ test('selectTrack prefers the most recently updated playing tab', () => {
   assert.equal(selectTrack(entries, settings(), 'en')?.title, 'New');
 });
 
-test('selectTrack hides paused tabs by default', () => {
-  const entries = [entry('Paused but newer', 9, { playing: false }), entry('Playing', 1)];
-
-  assert.equal(selectTrack(entries, settings(), 'en')?.title, 'Playing');
-  assert.equal(selectTrack([entry('A', 1, { playing: false })], settings(), 'en'), null);
-});
-
-test('selectTrack keeps the most recent paused tab, marked paused and without progress, when asked to', () => {
+test('selectTrack keeps the most recent paused tab, marked paused and without progress', () => {
   const entries = [entry('Older', 1, { playing: false }), entry('Newer', 5, { playing: false })];
-  const track = selectTrack(entries, settings({ whenPaused: 'show' }), 'en');
+  const track = selectTrack(entries, settings(), 'en');
 
   assert.equal(track?.title, 'Newer');
   assert.equal(track?.paused, true);
@@ -171,15 +164,14 @@ test('selectTrack keeps the most recent paused tab, marked paused and without pr
   assert.equal(track?.endTimestampMs, null);
 });
 
-test('selectTrack still prefers a playing tab over a paused one when paused tabs are kept', () => {
+test('selectTrack still prefers a playing tab over a paused one', () => {
   const entries = [entry('Paused but newer', 9, { playing: false }), entry('Playing', 1)];
 
-  assert.equal(selectTrack(entries, settings({ whenPaused: 'show' }), 'en')?.title, 'Playing');
+  assert.equal(selectTrack(entries, settings(), 'en')?.title, 'Playing');
 });
 
 test('selectTrack returns null when there is nothing to show', () => {
   assert.equal(selectTrack([], settings(), 'en'), null);
-  assert.equal(selectTrack([], settings({ whenPaused: 'show' }), 'en'), null);
 });
 
 test('selectTrack returns null while the extension is switched off', () => {

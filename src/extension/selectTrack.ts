@@ -21,8 +21,8 @@ function mostRecent(entries: TabEntry[]): TabEntry | undefined {
 }
 
 /**
- * Picks what to show on Discord and shapes it by the user's settings: the most recently updated
- * playing tab, else (if asked to) the most recently paused one, else nothing. `locale` decides the
+ * Picks what to show on Discord: the most recently updated playing tab, else the most recently
+ * paused one (shown with a pause icon), else nothing. `locale` decides the
  * language of the "Play on YouTube Music" button and of the playback icon's hover text.
  */
 export function selectTrack(
@@ -33,9 +33,7 @@ export function selectTrack(
   if (!settings.enabled) return null;
 
   const all = [...entries];
-  const chosen =
-    mostRecent(all.filter((entry) => entry.state.playing)) ??
-    (settings.whenPaused === 'show' ? mostRecent(all) : undefined);
+  const chosen = mostRecent(all.filter((entry) => entry.state.playing)) ?? mostRecent(all);
   if (!chosen) return null;
 
   const {

@@ -40,7 +40,6 @@ Bấm icon extension để mở popup:
 - Thẻ **On Discord (Preview)** vẽ giống activity thật (ảnh bìa, tên bài, tác giả, thanh tiến trình, nút).
   Tên bài dài bị cắt bằng "…"; rê chuột vào để xem đầy đủ.
 - **Button language**: ngôn ngữ nhãn nút (mặc định theo trình duyệt).
-- **When paused**: ẩn khỏi Discord, hoặc giữ lại với icon Pause (không có thanh tiến trình vì Discord sẽ tiếp tục đếm).
 - **Troubleshooting → Copy diagnostics**: copy trạng thái (phiên bản, trình duyệt, cài đặt, kết nối, bài đang
   phát) để dán vào báo lỗi. Không chứa link.
 

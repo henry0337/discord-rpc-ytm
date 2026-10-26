@@ -105,12 +105,9 @@ test('a paused track has no progress bar and wears the pause icon', () => {
 
 test('the note explains why the card is dimmed', () => {
   const off = buildPopupModel({ ...status, shown: false, settings: { ...DEFAULT_SETTINGS, enabled: false } });
-  const pausedHidden = buildPopupModel({ ...status, shown: false, now: { ...track, paused: true } });
 
   assert.equal(off.card?.dim, true);
   assert.equal(off.note, 'Off. Nothing is shown on Discord.');
-  assert.equal(pausedHidden.card?.dim, true);
-  assert.equal(pausedHidden.note, 'Paused. Hidden from Discord until you press play.');
 });
 
 test('the note reminds that Discord hides your own button, only when there is one', () => {

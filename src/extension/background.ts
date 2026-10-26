@@ -97,7 +97,7 @@ function sync(): void {
 function status(): Status {
   const hostStatus = hostConnected ? 'connected' : hostError ? 'unavailable' : 'idle';
   // What the browser is playing, regardless of the switches that decide whether Discord shows it.
-  const now = selectTrack(tabs.values(), { ...settings, enabled: true, whenPaused: 'show' }, locale());
+  const now = selectTrack(tabs.values(), { ...settings, enabled: true }, locale());
   return {
     settings,
     host: hostStatus,

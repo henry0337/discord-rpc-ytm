@@ -3,20 +3,16 @@ import { LANGUAGES } from './i18n.ts';
 /** The language setting meaning "follow the browser's UI language". */
 export const AUTO_LANGUAGE = 'auto';
 
-export type WhenPaused = 'hide' | 'show';
-
 export interface Settings {
   /** Master switch: nothing is shown on Discord while off. */
   enabled: boolean;
   /** `AUTO_LANGUAGE` or a code from the supported language list. */
   language: string;
-  whenPaused: WhenPaused;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
   enabled: true,
   language: AUTO_LANGUAGE,
-  whenPaused: 'hide',
 };
 
 export const SETTING_KEYS = Object.keys(DEFAULT_SETTINGS) as (keyof Settings)[];
@@ -25,7 +21,6 @@ const validators: { [K in keyof Settings]: (value: unknown) => value is Settings
   enabled: (value): value is boolean => typeof value === 'boolean',
   language: (value): value is string =>
     value === AUTO_LANGUAGE || LANGUAGES.some((language) => language.code === value),
-  whenPaused: (value): value is WhenPaused => value === 'hide' || value === 'show',
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
