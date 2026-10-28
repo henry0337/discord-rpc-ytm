@@ -1,34 +1,24 @@
 export interface Language {
-  /** Lower-case language code, plus a region only where the variants differ (zh-CN, zh-TW, pt-BR). */
+  /** Lower-case language code, plus a region only where the variants differ (zh-CN, zh-TW). */
   code: string;
   /** The language's name in itself, for the language picker. */
   name: string;
   /** Label of the Discord button that opens the track on YouTube Music. Discord caps it at 32 characters. */
   playButton: string;
+  /** Label of the Discord button that opens this project's repository. Same 32-character cap. */
+  repository: string;
   /** Hover text of the playback icon while a track plays and while it is paused. */
   playing: string;
   paused: string;
 }
 
 export const LANGUAGES: readonly Language[] = [
-  { code: 'en', name: 'English', playButton: 'Play on YouTube Music (Web)', playing: 'Playing', paused: 'Paused' },
-  { code: 'vi', name: 'Tiếng Việt', playButton: 'Phát trên YouTube Music (Web)', playing: 'Đang phát', paused: 'Tạm dừng' },
-  { code: 'ja', name: '日本語', playButton: 'YouTube Music (Web)で再生', playing: '再生中', paused: '一時停止中' },
-  { code: 'ko', name: '한국어', playButton: 'YouTube Music(웹)에서 재생', playing: '재생 중', paused: '일시중지됨' },
-  { code: 'zh-CN', name: '简体中文', playButton: '在 YouTube Music（网页版）播放', playing: '播放中', paused: '已暂停' },
-  { code: 'zh-TW', name: '繁體中文', playButton: '在 YouTube Music（網頁版）播放', playing: '播放中', paused: '已暫停' },
-  { code: 'fr', name: 'Français', playButton: 'Écouter sur YouTube Music (Web)', playing: 'En lecture', paused: 'En pause' },
-  { code: 'de', name: 'Deutsch', playButton: 'Auf YouTube Music (Web) hören', playing: 'Wiedergabe', paused: 'Pausiert' },
-  { code: 'es', name: 'Español', playButton: 'Escuchar en YouTube Music (Web)', playing: 'Reproduciendo', paused: 'En pausa' },
-  { code: 'pt-BR', name: 'Português (Brasil)', playButton: 'Ouvir no YouTube Music (Web)', playing: 'Tocando', paused: 'Pausado' },
-  { code: 'it', name: 'Italiano', playButton: 'Ascolta su YouTube Music (Web)', playing: 'In riproduzione', paused: 'In pausa' },
-  { code: 'ru', name: 'Русский', playButton: 'Слушать в YouTube Music (веб)', playing: 'Играет', paused: 'На паузе' },
-  { code: 'uk', name: 'Українська', playButton: 'Слухати в YouTube Music (веб)', playing: 'Грає', paused: 'На паузі' },
-  { code: 'pl', name: 'Polski', playButton: 'Odtwórz w YouTube Music (Web)', playing: 'Odtwarzanie', paused: 'Wstrzymano' },
-  { code: 'nl', name: 'Nederlands', playButton: 'Afspelen op YouTube Music (Web)', playing: 'Speelt af', paused: 'Gepauzeerd' },
-  { code: 'tr', name: 'Türkçe', playButton: "YouTube Music'te dinle (Web)", playing: 'Çalıyor', paused: 'Duraklatıldı' },
-  { code: 'th', name: 'ไทย', playButton: 'เล่นบน YouTube Music (เว็บ)', playing: 'กำลังเล่น', paused: 'หยุดชั่วคราว' },
-  { code: 'hi', name: 'हिन्दी', playButton: 'YouTube Music (वेब) पर चलाएं', playing: 'चल रहा है', paused: 'रुका हुआ' },
+  { code: 'en', name: 'English', playButton: 'Play on YouTube Music', repository: 'GitHub Repository', playing: 'Playing', paused: 'Paused' },
+  { code: 'vi', name: 'Tiếng Việt', playButton: 'Phát trên YouTube Music', repository: 'Kho mã nguồn GitHub', playing: 'Đang phát', paused: 'Tạm dừng' },
+  { code: 'ja', name: '日本語', playButton: 'YouTube Music で再生', repository: 'GitHub リポジトリ', playing: '再生中', paused: '一時停止中' },
+  { code: 'ko', name: '한국어', playButton: 'YouTube Music 에서 재생', repository: 'GitHub 리포지토리', playing: '재생 중', paused: '일시중지됨' },
+  { code: 'zh-CN', name: '简体中文', playButton: '在 YouTube Music 播放', repository: 'GitHub 存储库', playing: '播放中', paused: '已暂停' },
+  { code: 'zh-TW', name: '繁體中文', playButton: '在 YouTube Music 播放', repository: 'GitHub 儲存庫', playing: '播放中', paused: '已暫停' },
 ];
 
 const FALLBACK_LANGUAGE = 'en';
@@ -43,7 +33,6 @@ export function resolveLanguage(locale: string): string {
   if (language === 'zh') {
     return subtags.some((subtag) => TRADITIONAL_CHINESE_SUBTAGS.has(subtag)) ? 'zh-TW' : 'zh-CN';
   }
-  if (language === 'pt') return 'pt-BR';
   return LANGUAGES.some((entry) => entry.code === language) ? language : FALLBACK_LANGUAGE;
 }
 
@@ -54,6 +43,10 @@ function languageFor(locale: string): Language {
 
 export function playButtonLabel(locale: string): string {
   return languageFor(locale).playButton;
+}
+
+export function repositoryButtonLabel(locale: string): string {
+  return languageFor(locale).repository;
 }
 
 export function playbackLabel(locale: string, paused: boolean): string {

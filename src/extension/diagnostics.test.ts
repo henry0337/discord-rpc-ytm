@@ -17,6 +17,7 @@ const status: Status = {
     artworkUrl: 'https://img/1',
     imageText: null,
     playbackText: null,
+    repositoryLabel: null,
     button: { label: 'Play', url: 'https://music.youtube.com/watch?v=abc' },
     startTimestampMs: 1000,
     endTimestampMs: 2000,

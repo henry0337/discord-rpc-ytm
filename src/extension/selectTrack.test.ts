@@ -46,11 +46,17 @@ test('selectTrack returns the track of a playing tab without the playing flag or
     artworkUrl: null,
     imageText: null,
     playbackText: 'Playing',
+    repositoryLabel: 'GitHub Repository',
     button: null,
     startTimestampMs: 1000,
     endTimestampMs: 2000,
     paused: false,
   });
+});
+
+test('selectTrack words the repository button in the language of the user', () => {
+  assert.equal(selectTrack([entry('A', 1)], settings(), 'vi')?.repositoryLabel, 'Kho mã nguồn GitHub');
+  assert.equal(selectTrack([entry('A', 1)], settings(), 'ja-JP')?.repositoryLabel, 'GitHub リポジトリ');
 });
 
 test('selectTrack words the playback icon in the language of the user, for playing and paused', () => {

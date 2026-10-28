@@ -11,7 +11,7 @@ test('buildPlayButton links to the track on YouTube Music with a localised label
 });
 
 test('buildPlayButton falls back to the English label for an unsupported locale', () => {
-  assert.equal(buildPlayButton('dQw4w9WgXcQ', 'xx')?.label, 'Play on YouTube Music (Web)');
+  assert.equal(buildPlayButton('dQw4w9WgXcQ', 'xx')?.label, 'Play on YouTube Music');
 });
 
 test('buildPlayButton returns null when the video ID is unknown', () => {

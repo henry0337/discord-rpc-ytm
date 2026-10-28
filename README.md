@@ -57,6 +57,14 @@ Một số hành vi được cố định, không có công tắc:
   nối tên collaborator vào dòng tác giả: `ピュア - Pure (cùng với Eriko Hashimoto)` thành tên bài `ピュア`, dòng 2
   `PAS TASTA, Eriko Hashimoto` (bỏ qua tên đã có trong danh sách tác giả). Tốn thêm một request cho mỗi bài như vậy.
   Logic ở `src/extension/credit.ts`.
+- **Tên gốc của nhạc Nhật**: YouTube Music viết tên tác giả, tên bài và tên album theo ngôn ngữ giao diện
+  (`Kaya Mizuki`, `SHONAN NO KAZE`), còn ở tiếng Nhật thì là tên gốc (`水樹カヤ`, `湘南乃風`). Bài có tên chứa
+  kana được hỏi thêm bản tiếng Nhật (`hl=ja`) và dùng tên trong đó, sau khi kiểm tra cùng bài và cùng ID kênh
+  tác giả. Tác giả đứng đầu của bài như vậy được nhớ trong `storage.local` (khóa `nativeChannels`); từ bài kana
+  thứ hai, các bài khác của họ (kể cả tên chữ Latin hay chỉ có chữ Hán, vd. `Grand Blue`) cũng dùng tên tiếng Nhật.
+  Không áp dụng cho nhạc khác: hỏi tiếng Nhật cho nghệ sĩ phương Tây sẽ ra `テイラー・スウィフト`. Tốn thêm một
+  request cho mỗi bài như vậy. Logic ở `src/extension/nativeNames.ts` và `nativeChannels.ts`; chạy
+  `node scripts/probe.mjs "<từ khóa>"` để xem YouTube Music đặt tên một bài thế nào ở nhiều ngôn ngữ.
 
 Cài đặt lưu trong `storage.local` của extension. Logic quyết định popup hiện gì nằm ở
 `src/extension/popupModel.ts`; `src/extension/popup.ts` chỉ biến nó thành DOM.
@@ -83,19 +91,22 @@ Cài đặt lưu trong `storage.local` của extension. Logic quyết định po
   (`src/extension/page.ts`). API này không công khai và có thể đổi; khi gọi lỗi, extension quay về tên tác giả
   của `mediaSession` và bỏ các link.
 
-## Nút "Play on YouTube Music (Web)"
+## Nút "Play on YouTube Music"
 
-Activity có thêm một nút mở bài hát trên `music.youtube.com`. Lưu ý:
+Activity có thêm một nút mở bài hát trên `music.youtube.com`, và nút thứ hai **"GitHub Repository"** trỏ tới
+`https://github.com/henry0337/discord-rpc-ytm` (Discord cho tối đa hai nút; link cố định, nhãn dịch theo cùng
+ngôn ngữ với nút phát, và nút này là nút duy nhất khi không đọc được `videoId`). Lưu ý:
 
-- Discord **không hiện nút của chính bạn**, chỉ người khác xem profile mới thấy. Để kiểm tra, mở popup
+- Discord **không hiện các nút của chính bạn**, chỉ người khác xem profile mới thấy. Để kiểm tra, mở popup
   của extension: dòng *Button* hiện đúng nhãn và link sẽ gửi cho Discord.
 - Ngôn ngữ nhãn nút mặc định theo **ngôn ngữ giao diện của trình duyệt**. Discord không cung cấp
   ngôn ngữ của người dùng cho extension, nên nếu Discord của bạn dùng ngôn ngữ khác trình duyệt, hãy chọn
   ngôn ngữ trong popup (*Button language*).
-- Các ngôn ngữ hỗ trợ nằm trong `src/shared/i18n.ts` (nhãn tối đa 32 ký tự, test kiểm tra điều này).
-  Ngôn ngữ chưa có sẽ dùng tiếng Anh. Thêm ngôn ngữ mới chỉ cần thêm một dòng vào bảng đó.
+- Các ngôn ngữ hỗ trợ nằm trong `src/shared/i18n.ts`: English, Tiếng Việt, 日本語, 한국어, 简体中文, 繁體中文
+  (nhãn tối đa 32 ký tự, test kiểm tra điều này). Ngôn ngữ chưa có sẽ dùng tiếng Anh. Thêm ngôn ngữ mới chỉ cần
+  thêm một dòng vào bảng đó.
 - `videoId` được đọc từ player của trang bằng một script chạy trong world chính (`world: "MAIN"`,
-  cần Chrome 111+ / Firefox 128+). Nếu không đọc được thì nút sẽ không hiện.
+  cần Chrome 111+ / Firefox 128+). Nếu không đọc được thì nút phát sẽ không hiện.
 
 ## Phát triển
 

@@ -36,6 +36,7 @@ function sameDisplay(a: Track, b: Track): boolean {
     a.artworkUrl === b.artworkUrl &&
     a.imageText === b.imageText &&
     a.playbackText === b.playbackText &&
+    a.repositoryLabel === b.repositoryLabel &&
     a.button?.label === b.button?.label &&
     a.button?.url === b.button?.url &&
     a.paused === b.paused &&

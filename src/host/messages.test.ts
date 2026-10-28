@@ -10,7 +10,8 @@ const validTrack = {
   artworkUrl: 'https://img/1',
   imageText: null,
   playbackText: null,
-  button: { label: 'Play on YouTube Music (Web)', url: 'https://music.youtube.com/watch?v=abc' },
+  repositoryLabel: null,
+  button: { label: 'Play on YouTube Music', url: 'https://music.youtube.com/watch?v=abc' },
   startTimestampMs: 1000,
   endTimestampMs: 2000,
   paused: false,
@@ -49,6 +50,19 @@ test('parseExtensionMessage accepts playback text, or none, and rejects anything
   for (const playbackText of ['', 7, {}]) {
     const message = { type: 'setTrack', track: { ...validTrack, playbackText } };
     assert.equal(parseExtensionMessage(message), null, JSON.stringify(playbackText));
+  }
+});
+
+test('parseExtensionMessage accepts a repository label, or none, and rejects anything else', () => {
+  const withLabel = { type: 'setTrack', track: { ...validTrack, repositoryLabel: 'Kho mã nguồn GitHub' } };
+  assert.deepEqual(parseExtensionMessage(withLabel), withLabel);
+
+  const { repositoryLabel: _r, ...older } = validTrack;
+  assert.deepEqual(parseExtensionMessage({ type: 'setTrack', track: older }), { type: 'setTrack', track: validTrack });
+
+  for (const repositoryLabel of ['', 7, {}]) {
+    const message = { type: 'setTrack', track: { ...validTrack, repositoryLabel } };
+    assert.equal(parseExtensionMessage(message), null, JSON.stringify(repositoryLabel));
   }
 });
 

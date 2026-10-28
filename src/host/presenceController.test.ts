@@ -14,6 +14,7 @@ function track(overrides: Partial<Track> = {}): Track {
     artworkUrl: null,
     imageText: null,
     playbackText: null,
+    repositoryLabel: null,
     button: null,
     startTimestampMs: 1_000_000,
     endTimestampMs: 1_200_000,
@@ -119,11 +120,11 @@ test('applies an update when only the button changes, such as a language switch'
   const { calls, controller } = setup();
   const button = (label: string) => ({ label, url: 'https://music.youtube.com/watch?v=abc' });
   controller.setConnected(true);
-  controller.setTrack(track({ button: button('Play on YouTube Music (Web)') }));
+  controller.setTrack(track({ button: button('Play on YouTube Music') }));
   await Promise.resolve();
   mock.timers.tick(MIN_INTERVAL_MS);
 
-  controller.setTrack(track({ button: button('Phát trên YouTube Music (Web)') }));
+  controller.setTrack(track({ button: button('Phát trên YouTube Music') }));
   await Promise.resolve();
 
   assert.deepEqual(calls, ['set', 'set']);

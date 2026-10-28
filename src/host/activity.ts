@@ -1,5 +1,5 @@
 import type { SetActivity } from '@xhayper/discord-rpc';
-import { playbackIconUrl } from '../shared/display.ts';
+import { activityButtons, playbackIconUrl } from '../shared/display.ts';
 import type { Track } from '../shared/protocol.ts';
 
 const ACTIVITY_TYPE_LISTENING = 2;
@@ -48,8 +48,9 @@ export function buildActivity(track: Track): SetActivity {
     activity.smallImageKey = playbackIconUrl(track.paused);
     if (track.playbackText) activity.smallImageText = fitText(track.playbackText);
   }
-  if (track.button) {
-    activity.buttons = [{ label: fitButtonLabel(track.button.label), url: track.button.url }];
-  }
+  activity.buttons = activityButtons(track.button, track.repositoryLabel).map((button) => ({
+    label: fitButtonLabel(button.label),
+    url: button.url,
+  }));
   return activity;
 }

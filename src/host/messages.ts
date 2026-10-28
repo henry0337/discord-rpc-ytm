@@ -47,6 +47,7 @@ function parseTrack(value: unknown): Track | null {
   const imageUrl = parseLink(value.imageUrl);
   const imageText = parseText(value.imageText);
   const playbackText = parseText(value.playbackText);
+  const repositoryLabel = parseText(value.repositoryLabel);
   const startTimestampMs = parseTimestamp(value.startTimestampMs);
   const endTimestampMs = parseTimestamp(value.endTimestampMs);
   if (
@@ -55,6 +56,7 @@ function parseTrack(value: unknown): Track | null {
     imageUrl === INVALID ||
     imageText === INVALID ||
     playbackText === INVALID ||
+    repositoryLabel === INVALID ||
     startTimestampMs === INVALID ||
     endTimestampMs === INVALID
   ) {
@@ -69,6 +71,7 @@ function parseTrack(value: unknown): Track | null {
     artworkUrl,
     imageText,
     playbackText,
+    repositoryLabel,
     button,
     startTimestampMs,
     endTimestampMs,

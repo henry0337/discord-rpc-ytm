@@ -1,7 +1,7 @@
 import type { Track } from '../shared/protocol.ts';
 import type { Settings } from '../shared/settings.ts';
 import { originalTitle } from './originalTitle.ts';
-import { playbackLabel } from '../shared/i18n.ts';
+import { playbackLabel, repositoryButtonLabel } from '../shared/i18n.ts';
 import { buildPlayButton } from './playButton.ts';
 import type { PlayerState } from './playerState.ts';
 import { albumUrl, channelUrl, playlistUrl } from './trackDetails.ts';
@@ -61,6 +61,7 @@ export function selectTrack(
     artworkUrl,
     imageText: collectionName,
     playbackText: playbackLabel(locale, !playing),
+    repositoryLabel: repositoryButtonLabel(locale),
     button: buildPlayButton(videoId, locale),
     // A paused track gets no progress bar: Discord would keep counting up.
     startTimestampMs: playing ? startTimestampMs : null,

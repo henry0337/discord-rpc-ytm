@@ -130,7 +130,7 @@ function renderCard(card: Card, note: string, now: Track): HTMLElement[] {
   const body = element('div', 'card-body');
   body.append(cover, meta);
   box.append(element('div', 'card-label', card.header), body);
-  if (card.button) box.append(link(card.button.url, 'play', card.button.label));
+  for (const button of card.buttons) box.append(link(button.url, 'play', button.label));
 
   return [element('div', 'now-title', 'On Discord (Preview)'), box, element('p', 'hint', note)];
 }

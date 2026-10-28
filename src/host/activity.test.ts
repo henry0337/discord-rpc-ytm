@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { playbackIconUrl } from '../shared/display.ts';
+import { playbackIconUrl, REPOSITORY_BUTTON } from '../shared/display.ts';
 import { buildActivity } from './activity.ts';
 import type { Track } from '../shared/protocol.ts';
 
@@ -12,7 +12,8 @@ const track: Track = {
   artworkUrl: 'https://yt3.googleusercontent.com/abc=w544-h544-l90-rj',
   imageText: null,
   playbackText: null,
-  button: { label: 'Phát trên YouTube Music (Web)', url: 'https://music.youtube.com/watch?v=abc' },
+  repositoryLabel: null,
+  button: { label: 'Phát trên YouTube Music', url: 'https://music.youtube.com/watch?v=abc' },
   startTimestampMs: 1_000_000,
   endTimestampMs: 1_176_000,
   paused: false,
@@ -31,7 +32,8 @@ test('buildActivity shows a Listening activity with clickable artist and artwork
     endTimestamp: 1_176_000,
     statusDisplayType: 1,
     buttons: [
-      { label: 'Phát trên YouTube Music (Web)', url: 'https://music.youtube.com/watch?v=abc' },
+      { label: 'Phát trên YouTube Music', url: 'https://music.youtube.com/watch?v=abc' },
+      { label: 'GitHub Repository', url: 'https://github.com/henry0337/discord-rpc-ytm' },
     ],
   });
 });
@@ -87,10 +89,24 @@ test('buildActivity omits state when the artist is empty', () => {
   assert.equal('state' in activity, false);
 });
 
-test('buildActivity omits buttons when the track has no button', () => {
+test('buildActivity keeps the repository button when the track has no play button', () => {
   const activity = buildActivity({ ...track, button: null });
 
-  assert.equal('buttons' in activity, false);
+  assert.deepEqual(activity.buttons, [{ label: REPOSITORY_BUTTON.label, url: REPOSITORY_BUTTON.url }]);
+});
+
+test('buildActivity words the repository button as the track asks, and in English without it', () => {
+  const label = (repositoryLabel: string | null) =>
+    buildActivity({ ...track, repositoryLabel }).buttons?.[1]?.label;
+
+  assert.equal(label('Kho mã nguồn GitHub'), 'Kho mã nguồn GitHub');
+  assert.equal(label(null), 'GitHub Repository');
+  assert.equal(buildActivity({ ...track, repositoryLabel: 'x'.repeat(50) }).buttons?.[1]?.url, REPOSITORY_BUTTON.url);
+});
+
+test('buildActivity never goes over the two buttons Discord allows', () => {
+  assert.equal(buildActivity(track).buttons?.length, 2);
+  assert.equal(buildActivity({ ...track, button: null }).buttons?.length, 1);
 });
 
 test('buildActivity truncates a button label to the 32 characters Discord allows', () => {

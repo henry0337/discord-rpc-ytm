@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { buildPopupModel, progressOf } from './popupModel.ts';
 import type { Status } from './status.ts';
 import type { Track } from '../shared/protocol.ts';
-import { playbackIconUrl } from '../shared/display.ts';
+import { playbackIconUrl, REPOSITORY_BUTTON } from '../shared/display.ts';
 import { DEFAULT_SETTINGS } from '../shared/settings.ts';
 
 const NOW_MS = 1_700_000_000_000;
@@ -16,7 +16,8 @@ const track: Track = {
   artworkUrl: 'https://img/1',
   imageText: null,
   playbackText: null,
-  button: { label: 'Phát trên YouTube Music (Web)', url: 'https://music.youtube.com/watch?v=abc' },
+  repositoryLabel: null,
+  button: { label: 'Phát trên YouTube Music', url: 'https://music.youtube.com/watch?v=abc' },
   startTimestampMs: NOW_MS - 72_000,
   endTimestampMs: NOW_MS - 72_000 + 212_000,
   paused: false,
@@ -89,7 +90,9 @@ test('the card mirrors the Discord activity', () => {
   assert.equal(card?.artworkUrl, 'https://img/1');
   assert.equal(card?.imageText, null);
   assert.equal(card?.playbackIcon, playbackIconUrl(false));
-  assert.deepEqual(card?.button, track.button);
+  assert.deepEqual(card?.buttons, [track.button, REPOSITORY_BUTTON]);
+  const localized = buildPopupModel({ ...status, now: { ...track, repositoryLabel: 'Kho mã nguồn GitHub' } });
+  assert.equal(localized.card?.buttons[1]?.label, 'Kho mã nguồn GitHub');
   assert.equal(card?.dim, false);
   assert.equal(card?.progress, true);
 });
@@ -110,12 +113,17 @@ test('the note explains why the card is dimmed', () => {
   assert.equal(off.note, 'Off. Nothing is shown on Discord.');
 });
 
-test('the note reminds that Discord hides your own button, only when there is one', () => {
+test('the note reminds that Discord hides your own buttons', () => {
   assert.equal(
     buildPopupModel(status).note,
-    'This is what others see. Discord does not show you your own button.',
+    'This is what others see. Discord does not show you your own buttons.',
   );
-  assert.equal(buildPopupModel({ ...status, now: { ...track, button: null } }).note, 'This is what others see.');
+});
+
+test('the card shows only the repository button for a track without a play button', () => {
+  const { card } = buildPopupModel({ ...status, now: { ...track, button: null } });
+
+  assert.deepEqual(card?.buttons, [REPOSITORY_BUTTON]);
 });
 
 test('the language note names the browser language while automatic, or says the user chose', () => {

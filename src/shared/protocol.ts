@@ -25,6 +25,8 @@ export interface Track {
   imageText: string | null;
   /** Hover text of the playback icon at the corner of the artwork, in the user's language. */
   playbackText: string | null;
+  /** Label of the repository button, in the user's language; the host falls back to English without it. */
+  repositoryLabel: string | null;
   button: TrackButton | null;
   /** Epoch ms at which the track (virtually) started, i.e. now - position. Null: no progress bar. */
   startTimestampMs: number | null;

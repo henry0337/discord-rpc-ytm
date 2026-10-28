@@ -9,7 +9,7 @@ export function isVideoId(value: string): boolean {
   return VIDEO_ID_PATTERN.test(value);
 }
 
-/** The "Play on YouTube Music (Web)" button, or null when the video ID is unknown. */
+/** The "Play on YouTube Music" button, or null when the video ID is unknown. */
 export function buildPlayButton(videoId: string | null, locale: string): TrackButton | null {
   if (videoId === null || !isVideoId(videoId)) return null;
   return {
