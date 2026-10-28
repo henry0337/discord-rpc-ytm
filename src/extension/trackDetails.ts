@@ -35,7 +35,7 @@ export interface TrackDetails {
   credit: Credit | null;
 }
 
-const CHANNEL_ID_PATTERN = /^UC[\w-]{22}$/;
+export const CHANNEL_ID_PATTERN = /^UC[\w-]{22}$/;
 const ALBUM_ID_PATTERN = /^MPREb_[\w-]+$/;
 const ALBUM_PAGE_TYPE = 'MUSIC_PAGE_TYPE_ALBUM';
 // "PL…" playlists are made by people (someone else's too: the ID does not say whose). Everything

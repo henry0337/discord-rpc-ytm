@@ -1,5 +1,14 @@
 import { mayCarryCredit } from './credit.ts';
-import { AD_ATTRIBUTE, DETAILS_ATTRIBUTE, POSITION_ATTRIBUTE, VIDEO_ID_ATTRIBUTE } from './pageAttributes.ts';
+import { parseChannelList } from './nativeChannels.ts';
+import { channelToLearn, NATIVE_LANGUAGE, useNative, wantsNative } from './nativeNames.ts';
+import {
+  AD_ATTRIBUTE,
+  DETAILS_ATTRIBUTE,
+  LEARNED_ATTRIBUTE,
+  NATIVE_ATTRIBUTE,
+  POSITION_ATTRIBUTE,
+  VIDEO_ID_ATTRIBUTE,
+} from './pageAttributes.ts';
 import { parseTrackDetails, type TrackDetails } from './trackDetails.ts';
 
 // Runs in the page's own JavaScript world (manifest `world: "MAIN"`): the player API and the
@@ -22,6 +31,10 @@ const POLL_MS = 500;
 const FETCH_TIMEOUT_MS = 5000;
 const FAILURE_BACKOFF_MS = 30_000;
 const CACHE_LIMIT = 50;
+// The content script hands over the artists it remembers as Japanese; without it (storage failing)
+// the page carries on after this long, with none remembered.
+const NATIVE_WAIT_MS = 3000;
+const LEARNED_LIMIT = 100;
 const FALLBACK_CONTEXT = {
   client: { clientName: 'WEB_REMIX', clientVersion: '1.20250310.01.00' },
 };
@@ -29,6 +42,8 @@ const FALLBACK_CONTEXT = {
 const cache = new Map<string, TrackDetails>();
 const failedAt = new Map<string, number>();
 const fetching = new Set<string>();
+const learned: [string, string][] = [];
+const startedAt = Date.now();
 
 function player(): PlayerApi | null {
   return document.getElementById('movie_player') as PlayerApi | null;
@@ -101,10 +116,36 @@ async function fetchNext(videoId: string, { language, playlistId = null }: NextO
   }
 }
 
-async function fetchDetails(videoId: string, playlistId: string | null): Promise<TrackDetails | null> {
+/** What the page script noted for the content script to remember: this artist is on a Japanese title. */
+function learn(details: TrackDetails): void {
+  const channelId = channelToLearn(details);
+  if (channelId === null || learned.length >= LEARNED_LIMIT) return;
+  if (learned.some(([known, video]) => known === channelId && video === details.videoId)) return;
+
+  learned.push([channelId, details.videoId]);
+  setAttribute(LEARNED_ATTRIBUTE, JSON.stringify(learned));
+}
+
+async function fetchDetails(
+  videoId: string,
+  playlistId: string | null,
+  japaneseChannels: ReadonlySet<string>,
+): Promise<TrackDetails | null> {
   // Asking within a playlist also names it; if that fails (a stale ID), the track alone still works.
   const details = (await fetchNext(videoId, { playlistId })) ?? (playlistId ? await fetchNext(videoId) : null);
-  if (!details || details.credit || !details.title || !mayCarryCredit(details.title)) return details;
+  if (!details) return details;
+
+  // Japanese music is shown with its Japanese names, whatever the interface language is.
+  if (wantsNative(details, japaneseChannels)) {
+    const native = await fetchNext(videoId, { language: NATIVE_LANGUAGE, playlistId: details.playlistId });
+    const merged = native ? useNative(details, native) : null;
+    if (merged) {
+      learn(details);
+      return merged;
+    }
+  }
+
+  if (details.credit || !details.title || !mayCarryCredit(details.title)) return details;
 
   // The credit is worded in the interface language ("cùng với", "avec"...), which cannot be read
   // reliably. In English it is always "(feat. NAMES)", so ask for that and read the credit there.
@@ -124,11 +165,13 @@ function remember(key: string, details: TrackDetails): void {
 
 function ensureDetails(videoId: string, playlistId: string | null, key: string): void {
   if (cache.has(key) || fetching.has(key)) return;
+  const japaneseChannels = parseChannelList(document.documentElement.getAttribute(NATIVE_ATTRIBUTE));
+  if (japaneseChannels === null && Date.now() - startedAt < NATIVE_WAIT_MS) return;
   const failedRecently = Date.now() - (failedAt.get(key) ?? -Infinity) < FAILURE_BACKOFF_MS;
   if (failedRecently) return;
 
   fetching.add(key);
-  void fetchDetails(videoId, playlistId).then((details) => {
+  void fetchDetails(videoId, playlistId, japaneseChannels ?? new Set()).then((details) => {
     fetching.delete(key);
     if (details) remember(key, details);
     else failedAt.set(key, Date.now());

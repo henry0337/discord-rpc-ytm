@@ -1,6 +1,21 @@
 import { ext } from './api.ts';
+import {
+  confirmedChannels,
+  NATIVE_CHANNELS_KEY,
+  parseLearned,
+  parseNativeChannels,
+  recordChannel,
+  type NativeChannels,
+} from './nativeChannels.ts';
 import { toPlayerState, type PlayerSnapshot } from './playerState.ts';
-import { AD_ATTRIBUTE, DETAILS_ATTRIBUTE, POSITION_ATTRIBUTE, VIDEO_ID_ATTRIBUTE } from './pageAttributes.ts';
+import {
+  AD_ATTRIBUTE,
+  DETAILS_ATTRIBUTE,
+  LEARNED_ATTRIBUTE,
+  NATIVE_ATTRIBUTE,
+  POSITION_ATTRIBUTE,
+  VIDEO_ID_ATTRIBUTE,
+} from './pageAttributes.ts';
 import { parsePlaybackPosition } from './playbackPosition.ts';
 import { StateReporter, type StateMessage } from './stateReporter.ts';
 import { parseDetailsAttribute } from './trackDetails.ts';
@@ -37,6 +52,39 @@ function takeSnapshot(): PlayerSnapshot {
   };
 }
 
+// The artists seen on Japanese titles live in the extension's storage. The page script, which asks
+// YouTube Music for names, cannot reach it: it gets the list through an attribute and reports the
+// artists it newly saw the same way.
+let nativeChannels: NativeChannels = {};
+let nativeLoaded = false;
+
+function publishNativeChannels(): void {
+  document.documentElement.setAttribute(NATIVE_ATTRIBUTE, JSON.stringify(confirmedChannels(nativeChannels)));
+}
+
+void Promise.resolve(ext.storage.local.get(NATIVE_CHANNELS_KEY))
+  .then((stored) => {
+    nativeChannels = parseNativeChannels(stored[NATIVE_CHANNELS_KEY]);
+  })
+  .catch(() => {})
+  .finally(() => {
+    nativeLoaded = true;
+    publishNativeChannels();
+  });
+
+function rememberLearnedChannels(now: number): void {
+  if (!nativeLoaded) return;
+
+  const before = nativeChannels;
+  for (const [channelId, videoId] of parseLearned(document.documentElement.getAttribute(LEARNED_ATTRIBUTE))) {
+    nativeChannels = recordChannel(nativeChannels, channelId, videoId, now);
+  }
+  if (nativeChannels === before) return;
+
+  publishNativeChannels();
+  void Promise.resolve(ext.storage.local.set({ [NATIVE_CHANNELS_KEY]: nativeChannels })).catch(() => {});
+}
+
 function report(message: StateMessage): void {
   try {
     // There is no reply; a rejection only means the background script was not listening yet.
@@ -49,6 +97,7 @@ function report(message: StateMessage): void {
 
 const timer = setInterval(() => {
   const now = Date.now();
+  rememberLearnedChannels(now);
   const message = reporter.observe(toPlayerState(takeSnapshot(), now), now);
   if (message) report(message);
 }, TICK_MS);
