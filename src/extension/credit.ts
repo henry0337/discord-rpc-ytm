@@ -14,6 +14,9 @@ export interface Credit {
 
 // "Title (feat. A, B & C)", with ASCII or full-width brackets, at the very end.
 const TRAILING_CREDIT = /^(.*?)\s*[(（]\s*feat\.\s*([^()（）]*?)\s*[)）]\s*$/iu;
+// "original - Latin version feat. A, B": the same credit without brackets. It is only read after the
+// " - " that YouTube Music puts between the two versions of a title, so that a lone "夜 feat. X" stays.
+const BARE_CREDIT = /^(.+? - .+?)\s+feat\.\s+([^()（）]+?)\s*$/iu;
 // Names are separated by commas and a final "&" (or the Japanese comma).
 const NAME_SEPARATOR = /\s*[,、，]\s*|\s+&\s+/u;
 
@@ -22,14 +25,21 @@ const NAME_SEPARATOR = /\s*[,、，]\s*|\s+&\s+/u;
  * handled: for Latin titles the credit is usually part of the real title, which stays as it is.
  */
 export function parseCredit(title: string): Credit | null {
-  const match = TRAILING_CREDIT.exec(title);
-  if (!match) return null;
+  let baseTitle = title.trim();
+  const names: string[] = [];
 
-  const baseTitle = (match[1] ?? '').trim();
-  const names = (match[2] ?? '')
-    .split(NAME_SEPARATOR)
-    .map((name) => name.trim())
-    .filter((name) => name !== '');
+  // The title can carry both: YouTube Music appends "(feat. A)" even to a title that already has "feat. A".
+  for (const pattern of [TRAILING_CREDIT, BARE_CREDIT]) {
+    const match = pattern.exec(baseTitle);
+    if (!match) continue;
+
+    baseTitle = (match[1] ?? '').trim();
+    const found = (match[2] ?? '')
+      .split(NAME_SEPARATOR)
+      .map((name) => name.trim())
+      .filter((name) => name !== '');
+    names.unshift(...found.filter((name) => !names.some((known) => known.toLowerCase() === name.toLowerCase())));
+  }
   if (baseTitle === '' || names.length === 0 || !hasNonLatinLetter(baseTitle)) return null;
 
   return { baseTitle, names };

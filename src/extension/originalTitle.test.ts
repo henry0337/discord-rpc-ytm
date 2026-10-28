@@ -26,6 +26,15 @@ test('originalTitle keeps a trailing version note in brackets', () => {
   assert.equal(originalTitle('ひとひら - Hitohira [Live]'), 'ひとひら [Live]');
 });
 
+test('originalTitle drops the bracketed notes YouTube Music adds on its own', () => {
+  assert.equal(
+    originalTitle('紺碧のアル·フィーネ ～水樹カヤver.～ - Konpeki no al fine mizuki kaya (Version)'),
+    '紺碧のアル·フィーネ ～水樹カヤver.～',
+  );
+  assert.equal(originalTitle('ひとひら - Hitohira [version]'), 'ひとひら');
+  assert.equal(originalTitle('ひとひら - Hitohira (Remastered 2024) (Version)'), 'ひとひら (Remastered 2024)');
+});
+
 test('originalTitle leaves a version label alone, since it is not a Latin version of the name', () => {
   for (const title of [
     '夜に駆ける - Instrumental',

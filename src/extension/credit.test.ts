@@ -47,9 +47,26 @@ test('parseCredit leaves Latin-only titles alone, which are not the case this ha
   }
 });
 
+test('parseCredit reads a credit without brackets after the Latin version of the title', () => {
+  assert.deepEqual(parseCredit("裸でどつきあい - Hadaka de Dotsukiai feat. May'n"), {
+    baseTitle: '裸でどつきあい - Hadaka de Dotsukiai',
+    names: ["May'n"],
+  });
+  assert.deepEqual(parseCredit('夜 - Yoru FEAT. A, B & C')?.names, ['A', 'B', 'C']);
+});
+
+test('parseCredit reads both when YouTube Music appends a credit to a title that has one', () => {
+  assert.deepEqual(parseCredit("裸でどつきあい - Hadaka de Dotsukiai feat. May'n (feat. May'n)"), {
+    baseTitle: '裸でどつきあい - Hadaka de Dotsukiai',
+    names: ["May'n"],
+  });
+  assert.deepEqual(parseCredit('夜 - Yoru feat. A (feat. B & C)')?.names, ['A', 'B', 'C']);
+});
+
 test('parseCredit only reads a credit at the very end of the title', () => {
   assert.equal(parseCredit('夜 (feat. X) - Night'), null);
   assert.equal(parseCredit('夜 feat. X'), null);
+  assert.equal(parseCredit('夜 - Night feat. X (Remastered)'), null);
 });
 
 test('parseCredit ignores other brackets and other wording', () => {

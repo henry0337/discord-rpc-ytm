@@ -20,6 +20,18 @@ const VERSION_WORDS = new Set([
 // "Name (Remastered 2024)": the name, then any number of bracketed notes.
 const TRAILING_NOTES = /^(.*?)((?:\s*[(\[（【][^)\]）】]*[)\]）】])*)\s*$/u;
 
+// Bracketed notes YouTube Music adds on its own, which say nothing about the song: they go with the
+// Latin version. Compared without brackets and letter case.
+const DROPPED_NOTES = new Set(['version']);
+
+const NOTE = /\s*[(\[（【][^)\]）】]*[)\]）】]/gu;
+
+function keepNotes(notes: string): string {
+  return (notes.match(NOTE) ?? [])
+    .filter((note) => !DROPPED_NOTES.has(note.replace(/[\s()\[\]（）【】]/gu, '').toLowerCase()))
+    .join('');
+}
+
 function isVersionLabel(text: string): boolean {
   return (text.toLowerCase().match(/[a-z]+/g) ?? []).some((word) => VERSION_WORDS.has(word));
 }
@@ -33,5 +45,5 @@ export function originalTitle(title: string): string {
   const [, name = '', notes = ''] = TRAILING_NOTES.exec(latin) ?? [];
   if (name === '' || !isLatinName(name) || isVersionLabel(name)) return title;
 
-  return [original + notes, ...rest].join(SEPARATOR);
+  return [original + keepNotes(notes), ...rest].join(SEPARATOR);
 }
